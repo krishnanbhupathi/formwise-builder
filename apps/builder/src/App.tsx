@@ -19,6 +19,7 @@ import { fieldName, typeName } from "./components/field-meta";
 import { Palette, PaletteGhost, type PaletteDragData } from "./components/Palette";
 import { PropertiesPanel } from "./components/PropertiesPanel";
 import { Preview } from "./components/Preview";
+import { UndoRedo } from "./components/UndoRedo";
 import { useBuilder } from "./state/store";
 
 type Tab = "properties" | "preview";
@@ -71,6 +72,9 @@ export function App() {
         <img src="/favicon.svg" alt="" className="size-7" />
         <h1 className="text-base font-semibold">Formwise</h1>
         <span className="hidden text-sm text-muted sm:inline">Drag-and-drop form builder</span>
+        <div className="ml-auto">
+          <UndoRedo />
+        </div>
       </header>
 
       {notice && (

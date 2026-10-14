@@ -106,3 +106,23 @@ test("set a condition in the properties panel", async ({ page }) => {
   await preview.getByLabel(/Level/).selectOption("GCSE");
   await expect(preview.getByLabel(/work on/)).toBeVisible();
 });
+
+test("undo and redo: typing is one step, a deletion restores its condition", async ({ page }) => {
+  await page.goto("/");
+  await card(page, "Student's name").click();
+  const question = page.getByRole("textbox", { name: "Question", exact: true });
+  await question.fill("");
+  await question.pressSequentially("Full name");
+  await expect(questions(page).first()).toContainText("Full name");
+
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(questions(page).first()).toContainText("Student's name");
+  await page.getByRole("button", { name: "Redo" }).click();
+  await expect(questions(page).first()).toContainText("Full name");
+
+  await page.getByRole("button", { name: "Delete Level" }).click();
+  await expect(page.getByText(/Shown if/)).toHaveCount(0);
+  await page.locator("body").press("ControlOrMeta+z");
+  await expect(questions(page)).toHaveCount(6);
+  await expect(questions(page).filter({ hasText: "Exam board" })).toContainText("Shown if “Level” matches");
+});

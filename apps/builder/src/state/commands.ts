@@ -126,7 +126,8 @@ export function applyCommand(form: FormSchema, command: Command): CommandResult 
         const field = fields[at(command.id)];
         if (!field) return;
         for (const [key, value] of Object.entries(command.patch)) {
-          if (value === undefined || value === "") delete (field as Record<string, unknown>)[key];
+          // Blank optional settings are removed; the (required) label may be blank.
+          if (value === undefined || (value === "" && key !== "label")) delete (field as Record<string, unknown>)[key];
           else (field as Record<string, unknown>)[key] = value;
         }
         break;

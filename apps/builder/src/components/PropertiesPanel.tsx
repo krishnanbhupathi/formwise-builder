@@ -1,7 +1,10 @@
 import { canBeCondition, type Field, type SelectOption, type ShowIf } from "@formwise/renderer";
 import { useId, type ReactNode } from "react";
 import { newOptionId, type FieldPatch } from "../state/commands";
-import { useBuilder } from "../state/store";
+import { useBuilder, type DispatchOptions } from "../state/store";
+
+type Update = (patch: FieldPatch, options?: DispatchOptions) => void;
+const TYPING = { typing: true } as const;
 import { fieldName, typeName } from "./field-meta";
 
 /** Edits the selected field, or the form's title/description when none is selected. */
@@ -15,26 +18,26 @@ export function PropertiesPanel() {
   if (!field) {
     return (
       <Section title="Form settings">
-        <TextInput label="Title" value={form.title} maxLength={200} onChange={(title) => dispatch({ type: "updateForm", patch: { title } })} />
+        <TextInput label="Title" value={form.title} maxLength={200} onChange={(title) => dispatch({ type: "updateForm", patch: { title } }, TYPING)} />
         <TextInput
           label="Description"
           multiline
           value={form.description ?? ""}
           maxLength={1000}
-          onChange={(description) => dispatch({ type: "updateForm", patch: { description } })}
+          onChange={(description) => dispatch({ type: "updateForm", patch: { description } }, TYPING)}
         />
         <p className="text-sm text-muted">Select a question on the canvas to edit it.</p>
       </Section>
     );
   }
 
-  const update = (patch: FieldPatch) => dispatch({ type: "updateField", id: field.id, patch });
+  const update: Update = (patch, options) => dispatch({ type: "updateField", id: field.id, patch }, options);
   const earlier = form.fields.slice(0, index).filter(canBeCondition);
 
   return (
     <Section title={`${typeName(field.type)} settings`}>
-      <TextInput label={field.type === "heading" ? "Heading" : "Question"} value={field.label} maxLength={200} onChange={(label) => update({ label })} />
-      <TextInput label="Help text" value={field.helpText ?? ""} maxLength={500} onChange={(helpText) => update({ helpText })} />
+      <TextInput label={field.type === "heading" ? "Heading" : "Question"} value={field.label} maxLength={200} onChange={(label) => update({ label }, TYPING)} />
+      <TextInput label="Help text" value={field.helpText ?? ""} maxLength={500} onChange={(helpText) => update({ helpText }, TYPING)} />
       {field.type !== "heading" && <Toggle label="Required" checked={field.required} onChange={(required) => update({ required })} />}
       <TypeSettings field={field} update={update} />
       {field.type !== "heading" || earlier.length > 0 ? <ConditionEditor field={field} candidates={earlier} update={update} /> : null}
@@ -42,29 +45,29 @@ export function PropertiesPanel() {
   );
 }
 
-function TypeSettings({ field, update }: { field: Field; update: (patch: FieldPatch) => void }) {
+function TypeSettings({ field, update }: { field: Field; update: Update }) {
   switch (field.type) {
     case "text":
     case "textarea":
       return (
         <>
-          <TextInput label="Placeholder" value={field.placeholder ?? ""} maxLength={200} onChange={(placeholder) => update({ placeholder })} />
+          <TextInput label="Placeholder" value={field.placeholder ?? ""} maxLength={200} onChange={(placeholder) => update({ placeholder }, TYPING)} />
           <Pair>
-            <NumberInput label="Min length" value={field.minLength} min={0} integer onChange={(minLength) => update({ minLength })} />
-            <NumberInput label="Max length" value={field.maxLength} min={1} integer onChange={(maxLength) => update({ maxLength })} />
+            <NumberInput label="Min length" value={field.minLength} min={0} integer onChange={(minLength) => update({ minLength }, TYPING)} />
+            <NumberInput label="Max length" value={field.maxLength} min={1} integer onChange={(maxLength) => update({ maxLength }, TYPING)} />
           </Pair>
           <RangeWarning min={field.minLength} max={field.maxLength} />
         </>
       );
     case "email":
-      return <TextInput label="Placeholder" value={field.placeholder ?? ""} maxLength={200} onChange={(placeholder) => update({ placeholder })} />;
+      return <TextInput label="Placeholder" value={field.placeholder ?? ""} maxLength={200} onChange={(placeholder) => update({ placeholder }, TYPING)} />;
     case "number":
       return (
         <>
-          <TextInput label="Placeholder" value={field.placeholder ?? ""} maxLength={200} onChange={(placeholder) => update({ placeholder })} />
+          <TextInput label="Placeholder" value={field.placeholder ?? ""} maxLength={200} onChange={(placeholder) => update({ placeholder }, TYPING)} />
           <Pair>
-            <NumberInput label="Minimum" value={field.min} onChange={(min) => update({ min })} />
-            <NumberInput label="Maximum" value={field.max} onChange={(max) => update({ max })} />
+            <NumberInput label="Minimum" value={field.min} onChange={(min) => update({ min }, TYPING)} />
+            <NumberInput label="Maximum" value={field.max} onChange={(max) => update({ max }, TYPING)} />
           </Pair>
           <RangeWarning min={field.min} max={field.max} />
           <Toggle label="Whole numbers only" checked={field.integer ?? false} onChange={(integer) => update({ integer: integer || undefined })} />
@@ -73,26 +76,26 @@ function TypeSettings({ field, update }: { field: Field; update: (patch: FieldPa
     case "date":
       return (
         <Pair>
-          <TextInput label="Earliest" type="date" value={field.min ?? ""} onChange={(min) => update({ min })} />
-          <TextInput label="Latest" type="date" value={field.max ?? ""} onChange={(max) => update({ max })} />
+          <TextInput label="Earliest" type="date" value={field.min ?? ""} onChange={(min) => update({ min }, TYPING)} />
+          <TextInput label="Latest" type="date" value={field.max ?? ""} onChange={(max) => update({ max }, TYPING)} />
         </Pair>
       );
     case "file":
       return (
         <>
-          <TextInput label="Allowed types" placeholder=".pdf, image/*" value={field.accept ?? ""} maxLength={200} onChange={(accept) => update({ accept })} />
-          <NumberInput label="Max size (MB)" value={field.maxSizeMb} min={0.1} max={100} onChange={(maxSizeMb) => update({ maxSizeMb })} />
+          <TextInput label="Allowed types" placeholder=".pdf, image/*" value={field.accept ?? ""} maxLength={200} onChange={(accept) => update({ accept }, TYPING)} />
+          <NumberInput label="Max size (MB)" value={field.maxSizeMb} min={0.1} max={100} onChange={(maxSizeMb) => update({ maxSizeMb }, TYPING)} />
         </>
       );
     case "select":
-      return <OptionsEditor options={field.options} onChange={(options) => update({ options })} />;
+      return <OptionsEditor options={field.options} onChange={(options, typing) => update({ options }, typing ? TYPING : undefined)} />;
     default:
       return null;
   }
 }
 
-function OptionsEditor({ options, onChange }: { options: SelectOption[]; onChange: (options: SelectOption[]) => void }) {
-  const set = (i: number, label: string) => onChange(options.map((o, j) => (j === i ? { ...o, label } : o)));
+function OptionsEditor({ options, onChange }: { options: SelectOption[]; onChange: (options: SelectOption[], typing?: boolean) => void }) {
+  const set = (i: number, label: string) => onChange(options.map((o, j) => (j === i ? { ...o, label } : o)), true);
   const move = (i: number, by: number) => {
     const next = [...options];
     const [o] = next.splice(i, 1);
@@ -135,7 +138,7 @@ function OptionsEditor({ options, onChange }: { options: SelectOption[]; onChang
   );
 }
 
-function ConditionEditor({ field, candidates, update }: { field: Field; candidates: Field[]; update: (patch: FieldPatch) => void }) {
+function ConditionEditor({ field, candidates, update }: { field: Field; candidates: Field[]; update: Update }) {
   const id = useId();
   const rule = field.showIf;
   const target = candidates.find((c) => c.id === rule?.fieldId);
@@ -145,7 +148,7 @@ function ConditionEditor({ field, candidates, update }: { field: Field; candidat
     const t = candidates.find((c) => c.id === targetId);
     update({ showIf: t ? { fieldId: t.id, equals: defaultFor(t) } : undefined });
   };
-  const setEquals = (equals: ShowIf["equals"]) => target && update({ showIf: { fieldId: target.id, equals } });
+  const setEquals = (equals: ShowIf["equals"], options?: DispatchOptions) => target && update({ showIf: { fieldId: target.id, equals } }, options);
 
   return (
     <fieldset className="flex flex-col gap-2 border-t border-line pt-4">
@@ -175,7 +178,7 @@ function ConditionEditor({ field, candidates, update }: { field: Field; candidat
             </select>
           )}
           {target?.type === "text" && (
-            <TextInput label="equals (ignores case)" value={String(rule!.equals)} maxLength={200} onChange={(v) => setEquals(v)} />
+            <TextInput label="equals (ignores case)" value={String(rule!.equals)} maxLength={200} onChange={(v) => setEquals(v, TYPING)} />
           )}
         </>
       )}

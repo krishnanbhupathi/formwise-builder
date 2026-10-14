@@ -90,6 +90,12 @@ describe("applyCommand", () => {
     expect(form.fields[0]).toEqual({ id: "name", type: "text", label: "Full name", required: true });
   });
 
+  it("keeps an emptied label as an empty string (label is required)", () => {
+    const { form } = run(base, { type: "updateField", id: "name", patch: { label: "" } });
+    expect(form.fields[0]!.label).toBe("");
+    expect(parseFormSchema(form).ok).toBe(true);
+  });
+
   it("duplicates a field right after the original with fresh ids", () => {
     const { form } = run(base, { type: "duplicateField", id: "level", newId: "level2" });
     expect(ids(form)).toEqual(["name", "level", "level2", "board"]);
