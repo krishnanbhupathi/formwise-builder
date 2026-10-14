@@ -1,0 +1,29 @@
+{
+  "name": "@formwise/renderer",
+  "version": "0.1.0",
+  "description": "Render and validate Formwise JSON form schemas in React.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --clean --external react --external zod && tsc -p tsconfig.build.json && cp src/styles.css dist/styles.css"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "zod": "^4"
+  }
+}
