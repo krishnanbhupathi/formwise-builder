@@ -2,59 +2,37 @@
 
 Spec: "Case Study Build Plan" (Claude Doc). Formwise is days 4–6 of the week (Day 4 = Mon 19 Oct 2026); built ahead of schedule on 15 Oct.
 
-## Status: end of session 2 (Day 5 scope)
+## Status: end of session 3 (Day 6 scope)
 
-**Day 5 is complete:** undo/redo; save, publish and share; server-validated submissions; the submissions table and CSV export. Green in CI (unit + e2e with Postgres).
-
-**Deployed (15 Oct): https://formwise-builder.vercel.app**
-- Neon database `formwise` (project in aws-us-east-2); functions pinned to Vercel `cle1`.
-- GitHub pushes to `main` deploy to production; each build runs migrations first.
-- The full Playwright suite passes against production (`E2E_BASE_URL=https://formwise-builder.vercel.app npm run e2e`): 13 passed, 1 skipped.
+**Day 6 is complete:** AI "describe your form", and the renderer is now Slotwise's intake form. Deployed at **https://formwise-builder.vercel.app**; CI green (unit + e2e with Postgres).
 
 ### Done
-**Day 4** (session 1): renderer package (schema, validation, `<FormRenderer>`), builder (palette, dnd-kit canvas, properties panel, live preview), command reducer + store.
+**Days 4–5:** see git history. Renderer package, builder, undo/redo, Hono API (save, publish, share, submissions, CSV), deployed to Vercel + Neon.
 
-**Day 5**
-- **Undo/redo** (`state/history.ts`):
-  - Snapshot history, max 100 steps.
-  - Typing in the same property within 1s is one step.
-  - Toolbar plus Cmd/Ctrl+Z, Shift+Cmd/Ctrl+Z and Ctrl+Y, ignored inside the preview form.
-  - Undo restores conditions removed by a move or delete.
-- **API** (`apps/api`, Hono + Drizzle, Postgres):
-  - `forms`, `form_versions`, `submissions`, `rate_limits`.
-  - Edit token stored as SHA-256 and compared in constant time.
-  - Optimistic-locking saves (409).
-  - Publish freezes version N, serving `/api/public/forms/:id`.
-  - Submissions validated server-side against the version filled in.
-  - Honeypot, per-IP rate limits (hashed), 256 KB body limit.
-  - Keyset-paginated submissions.
-  - `/api/health`, which also pings the DB.
-- **Vercel wiring:** `api/[[...route]].ts` mounts the Hono app. `vercel.json` migrates, builds the renderer and SPA, adds SPA rewrites and security headers. Not tried on Vercel yet.
-- **Renderer:** `@formwise/renderer/core` entry (no React) used by the API; `.js` import extensions so the published types work under NodeNext.
-- **SPA pages:**
-  - `/`: new form; Save creates it.
-  - `/edit/<id>#<token>`: autosave status, Publish / Publish changes, Share dialog.
-  - `/edit/<id>/submissions`: table, Load more, CSV export.
-  - `/f/<id>`: public form, thank-you page.
-  - `/forms`: forms remembered in this browser.
-- **Autosave** (`lib/autosave.ts`): a plain controller.
-  - Debounces saves.
-  - Saves edits made during a request once it finishes.
-  - Stops on a conflict, with a Reload prompt.
-  - Retries after errors.
-  - Publish always saves first.
-  - Pending edits are flushed when you leave the editor.
-- **Bugs found and fixed by tests:**
-  - Clearing a question's label deleted the required property and crashed the canvas.
-  - Leaving the editor within ~1s of an edit dropped the save.
-  - A key event targeted at `window` crashed the shortcut handler.
-- **Tests:** **120 Vitest** (37 renderer, 65 builder, 18 API on PGlite) + **13 Playwright** (+1 skipped: mouse drag on mobile), desktop + Pixel 7, against the production build, the real API and Postgres. All passing locally and in CI.
+**Day 6**
+- **Describe your form** (`apps/api/src/ai/`):
+  - Claude Haiku 5.5 fills in a simple *draft* via a strictly-typed tool (keys, option text, conditions by key).
+  - `draftToForm` builds the real `FormSchema` with ids; `parseFormSchema` validates it, with one retry that sends back the exact errors.
+  - The result replaces the canvas in one undoable step (Krishna).
+  - Guards: descriptions of 10–1000 characters, 10 per IP per hour, 200 per day overall, 503 without a key, 60 s function limit.
+  - One JSON log line per call (`ms`, `attempts`, tokens).
+  - Tests and local e2e use a deterministic fake model (`FORMWISE_FAKE_AI=1`).
+- **Measured so far** (single calls, not yet a benchmark):
+  - local call: 3.4 s, 1,741 input / 470 output tokens, first attempt valid;
+  - one production request end to end: 5.9 s (may include a cold start).
+  - Day 7: collect more from the production logs.
+- **Renderer:**
+  - `<FormFields>` (questions only, controlled by the host) split out of `<FormRenderer>`, so hosts with their own `<form>` can embed it;
+  - `theme` prop (`auto`/`light`/`dark`);
+  - Slotwise vendors it (see slotwise-booking).
+- **Demo intake form** published on production for Slotwise: `/f/jmdpq5gycd` ("Before your first lesson"). Its edit link is in slotwise-booking's `.env.local` (`FORMWISE_DEMO_EDIT_URL`).
+- **Tests:**
+  - 137 Vitest: 39 renderer, 65 builder, 33 API (incl. 10 AI draft/generator tests and 5 endpoint tests);
+  - 15 Playwright (+1 skipped), all passing locally and in CI.
 
-### Next (Day 6)
-1. AI "describe your form" → schema with Claude Haiku 5.5 (`ANTHROPIC_API_KEY` is set in Vercel production and local `.env.local`; verified 15 Oct). The model's output goes through `parseFormSchema` and then `replaceForm`, so it can be undone. Tests use a fake model. Rate-limit per IP. It's 4th in the cut order.
-2. The renderer as Slotwise's intake form: publish `@formwise/renderer` (needs the npm scope) or vendor it. Validate on Slotwise's server with `/core`.
-3. Tests for both.
-4. Deploy both apps once the accounts exist.
+### Next (Day 7)
+1. Measure: Lighthouse on the builder and public form, AI latency from the logs, test counts.
+2. 2-minute video, README polish, case-study page on bhupathi.dev.
 
 ### Decisions
 | Date | Decision | Why |
@@ -82,13 +60,19 @@ Spec: "Case Study Build Plan" (Claude Doc). Formwise is days 4–6 of the week (
 | Day 5 | CSV built in the browser, formula-escaped | Token never in a URL; safe in Excel/Sheets |
 | Day 5 | Select answers stored as the option label | Readable CSV; unchanged from Day 4 |
 | Day 5 | Neon project in us-east-2 shared by both apps (one database each); functions in `cle1` | Krishna's existing Neon project; same metro as the database |
+| Day 6 | AI result replaces the form (undoable) | Krishna |
+| Day 6 | Don't publish to npm; Slotwise vendors the renderer | Krishna |
+| Day 6 | Model fills a draft format, server assigns ids | Fewer invalid outputs than asking for raw ids/cross-references; validated + one retry |
+| Day 6 | Claude Haiku 5.5 | Fast and cheap; quality checked on a real description |
+| Day 6 | Cost guards: per-IP + global daily cap in Postgres | Public demo on Krishna's key |
 | Day 5 | API entry `api/index.ts` + `/api/(.*)` rewrite | Vercel's `[[...route]]` catch-all didn't match multi-segment paths outside Next.js |
 
 ### Blocked on Krishna
-- **npm:** an account and scope for publishing the renderer (Day 6).
+- Nothing for Day 7 except recording the video.
 
 
 ### Known issues
+- Conditions only support "equals one value", so "show if Year 11 or above" can't be expressed (the AI picks a single value). Next step: an "is one of" rule.
 - Preview deployments have no database (migrations are skipped there, so their API returns errors). Next step: Neon's Vercel integration for a database branch per preview.
 - Production contains a few test forms created by the e2e run against it (only reachable with their edit tokens).
 - On phones the editor header wraps to three rows.
