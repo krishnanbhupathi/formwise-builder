@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+/* Colour tokens, switched for dark mode below; used as bg-surface, text-ink… */
+@theme {
+  --color-surface: var(--surface);
+  --color-panel: var(--panel);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+}
+
+:root {
+  --surface: #f8fafc;
+  --panel: #ffffff;
+  --line: #e2e8f0;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --accent: #4f46e5;
+  --accent-soft: #eef2ff;
+  --danger: #b91c1c;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #020617;
+    --panel: #0f172a;
+    --line: #1e293b;
+    --ink: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #818cf8;
+    --accent-soft: #1e1b4b;
+    --danger: #f87171;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
