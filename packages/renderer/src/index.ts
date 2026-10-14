@@ -1,3 +1,2 @@
-export * from "./schema";
-export * from "./validation";
-export { FormRenderer, type FormRendererProps } from "./FormRenderer";
+export * from "./core.js";
+export { FormRenderer, type FormRendererProps } from "./FormRenderer.js";

@@ -1,4 +1,4 @@
-import type { FormSchema } from "./schema";
+import type { FormSchema } from "./schema.js";
 
 /** A small but complete form used across tests. */
 export const tutoringIntake: FormSchema = {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { tutoringIntake as form } from "./test-forms";
-import { fileMatchesAccept, validateSubmission, visibleFieldIds, type FormValues } from "./validation";
+import { tutoringIntake as form } from "./test-forms.js";
+import { fileMatchesAccept, validateSubmission, visibleFieldIds, type FormValues } from "./validation.js";
 
 const valid: FormValues = { name: "Sam", email: "sam@example.com", level: "GCSE", consent: true };
 

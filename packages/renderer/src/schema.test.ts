@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseFormSchema, SCHEMA_VERSION, type FormSchema } from "./schema";
-import { tutoringIntake } from "./test-forms";
+import { parseFormSchema, SCHEMA_VERSION, type FormSchema } from "./schema.js";
+import { tutoringIntake } from "./test-forms.js";
 
 const withFields = (fields: unknown[]) => ({ ...tutoringIntake, fields });
 const errorsOf = (input: unknown) => {

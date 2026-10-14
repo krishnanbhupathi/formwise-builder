@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isInputField, type Field, type FormSchema } from "./schema";
+import { isInputField, type Field, type FormSchema } from "./schema.js";
 
 /** Metadata only: Formwise never uploads file contents. */
 export type FileValue = { name: string; size: number; type: string };

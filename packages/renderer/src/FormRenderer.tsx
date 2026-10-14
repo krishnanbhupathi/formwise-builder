@@ -1,6 +1,6 @@
 import { useId, useMemo, useState, type FormEvent, type ReactNode } from "react";
-import type { Field, FormSchema } from "./schema";
-import { fieldValidator, validateSubmission, visibleFieldIds, type FieldValue, type FormValues } from "./validation";
+import type { Field, FormSchema } from "./schema.js";
+import { fieldValidator, validateSubmission, visibleFieldIds, type FieldValue, type FormValues } from "./validation.js";
 
 export type FormRendererProps = {
   form: FormSchema;

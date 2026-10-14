@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { FormRenderer } from "./FormRenderer";
-import { tutoringIntake as form } from "./test-forms";
+import { FormRenderer } from "./FormRenderer.js";
+import { tutoringIntake as form } from "./test-forms.js";
 
 const setup = () => {
   const onSubmit = vi.fn();
