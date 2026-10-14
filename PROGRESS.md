@@ -4,7 +4,12 @@ Spec: "Case Study Build Plan" (Claude Doc). Formwise is days 4–6 of the week (
 
 ## Status: end of session 2 (Day 5 scope)
 
-**Day 5 is complete:** undo/redo; save, publish and share; server-validated submissions; the submissions table and CSV export. Green in CI (unit + e2e with Postgres). **Not deployed:** Vercel and Neon aren't set up yet. Slotwise deploys first.
+**Day 5 is complete:** undo/redo; save, publish and share; server-validated submissions; the submissions table and CSV export. Green in CI (unit + e2e with Postgres).
+
+**Deployed (15 Oct): https://formwise-builder.vercel.app**
+- Neon database `formwise` (project in aws-us-east-2); functions pinned to Vercel `cle1`.
+- GitHub pushes to `main` deploy to production; each build runs migrations first.
+- The full Playwright suite passes against production (`E2E_BASE_URL=https://formwise-builder.vercel.app npm run e2e`): 13 passed, 1 skipped.
 
 ### Done
 **Day 4** (session 1): renderer package (schema, validation, `<FormRenderer>`), builder (palette, dnd-kit canvas, properties panel, live preview), command reducer + store.
@@ -76,15 +81,16 @@ Spec: "Case Study Build Plan" (Claude Doc). Formwise is days 4–6 of the week (
 | Day 5 | Rate limit in Postgres (fixed window, hashed IP) | No extra service; good enough against a script |
 | Day 5 | CSV built in the browser, formula-escaped | Token never in a URL; safe in Excel/Sheets |
 | Day 5 | Select answers stored as the option label | Readable CSV; unchanged from Day 4 |
+| Day 5 | Neon project in us-east-2 shared by both apps (one database each); functions in `cle1` | Krishna's existing Neon project; same metro as the database |
+| Day 5 | API entry `api/index.ts` + `/api/(.*)` rewrite | Vercel's `[[...route]]` catch-all didn't match multi-segment paths outside Next.js |
 
 ### Blocked on Krishna
-- **Vercel:** a project for this repo (import from GitHub; root directory = repo root; `vercel.json` sets the rest).
-- **Neon:** add it via Vercel → Storage, which sets `DATABASE_URL`. A separate database from Slotwise's.
 - **npm:** an account and scope for publishing the renderer (Day 6).
 - **AI API key** for "describe your form" (Day 6).
 
 ### Known issues
-- Vercel's handling of the `api/` function (`.js` imports into `apps/api` TypeScript) is untested until the first deploy; the fallback is bundling the API with tsup.
+- Preview deployments have no database (migrations are skipped there, so their API returns errors). Next step: Neon's Vercel integration for a database branch per preview.
+- Production contains a few test forms created by the e2e run against it (only reachable with their edit tokens).
 - On phones the editor header wraps to three rows.
 - `rate_limits` rows are never pruned (tiny; add a cleanup when a cron exists).
 - An edit link can't be revoked or rotated yet.
