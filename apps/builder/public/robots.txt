@@ -1,0 +1,5 @@
+User-agent: *
+# Edit pages carry private tokens; public forms belong to their owners; the API is not for crawlers.
+Disallow: /edit/
+Disallow: /f/
+Disallow: /api/
