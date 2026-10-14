@@ -1,7 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { FormRenderer } from "./FormRenderer.js";
+import { useState } from "react";
+import { FormFields, FormRenderer } from "./FormRenderer.js";
+import type { FormValues } from "./validation.js";
 import { tutoringIntake as form } from "./test-forms.js";
 
 const setup = () => {
@@ -78,5 +80,44 @@ describe("<FormRenderer>", () => {
     const file = new File(["%PDF"], "report.pdf", { type: "application/pdf" });
     await user.upload(screen.getByLabelText(/^School report/), file);
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+});
+
+describe("<FormFields>", () => {
+  function Host({ onValues }: { onValues: (v: Record<string, unknown>) => void }) {
+    const [values, setValues] = useState<FormValues>({});
+    return (
+      <form aria-label="Host form">
+        <FormFields
+          form={form}
+          values={values}
+          errors={{ name: "Server says no" }}
+          theme="light"
+          onChange={(id, v) => {
+            const next = { ...values, [id]: v };
+            setValues(next);
+            onValues(next);
+          }}
+        />
+      </form>
+    );
+  }
+
+  it("renders questions without its own form or button, inside a host form", () => {
+    render(<Host onValues={() => {}} />);
+    expect(screen.getAllByRole("form")).toHaveLength(1);
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/Full name/)).toBeInTheDocument();
+    expect(document.querySelector(".fw-root")).toHaveAttribute("data-theme", "light");
+  });
+
+  it("shows host-provided errors and reports changes, with conditions applied", async () => {
+    const onValues = vi.fn();
+    const user = userEvent.setup();
+    render(<Host onValues={onValues} />);
+    expect(screen.getByRole("alert")).toHaveTextContent("Server says no");
+    await user.selectOptions(screen.getByLabelText(/Level/), "A-level");
+    expect(onValues).toHaveBeenLastCalledWith({ level: "A-level" });
+    expect(screen.getByLabelText(/Exam board/)).toBeInTheDocument();
   });
 });

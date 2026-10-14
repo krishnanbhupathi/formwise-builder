@@ -2,6 +2,8 @@ import { useId, useMemo, useState, type FormEvent, type ReactNode } from "react"
 import type { Field, FormSchema } from "./schema.js";
 import { fieldValidator, validateSubmission, visibleFieldIds, type FieldValue, type FormValues } from "./validation.js";
 
+export type Theme = "auto" | "light" | "dark";
+
 export type FormRendererProps = {
   form: FormSchema;
   /** Called with validated, normalised data (hidden fields removed). */
@@ -10,6 +12,8 @@ export type FormRendererProps = {
   submitLabel?: string;
   /** Disables inputs and the submit button (e.g. while the host is saving). */
   disabled?: boolean;
+  /** "auto" follows the OS colour scheme; hosts without a dark mode pass "light". */
+  theme?: Theme;
   /** Extra content rendered above the submit button (e.g. a host's own fields). */
   children?: ReactNode;
 };
@@ -19,35 +23,29 @@ export type FormRendererProps = {
  * field is left (blur) or on submit; conditional fields appear and disappear
  * as answers change.
  */
-export function FormRenderer({ form, onSubmit, initialValues = {}, submitLabel = "Submit", disabled, children }: FormRendererProps) {
+export function FormRenderer({ form, onSubmit, initialValues = {}, submitLabel = "Submit", disabled, theme = "auto", children }: FormRendererProps) {
   const uid = useId();
   const [values, setValues] = useState<FormValues>(initialValues);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const [submitErrors, setSubmitErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
-  const visible = useMemo(() => visibleFieldIds(form, values), [form, values]);
-
-  const errorFor = (field: Field): string | undefined => {
-    if (!touched[field.id]) return undefined;
+  // Live errors for fields the person has already left (or tried to submit).
+  const errors: Record<string, string> = {};
+  for (const field of form.fields) {
+    if (!touched[field.id]) continue;
     const result = fieldValidator(field).safeParse(values[field.id]);
-    return result.success ? undefined : (result.error.issues[0]?.message ?? submitErrors[field.id]);
-  };
-
-  const setValue = (id: string, value: FieldValue) => setValues((v) => ({ ...v, [id]: value }));
-  const touch = (id: string) => setTouched((t) => (t[id] ? t : { ...t, [id]: true }));
+    if (!result.success) errors[field.id] = result.error.issues[0]?.message ?? "Invalid value";
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const result = validateSubmission(form, values);
     if (!result.ok) {
-      setSubmitErrors(result.errors);
       setTouched((t) => ({ ...t, ...Object.fromEntries(Object.keys(result.errors).map((id) => [id, true])) }));
       const first = form.fields.find((f) => result.errors[f.id]);
       if (first) document.getElementById(`${uid}-${first.id}`)?.focus();
       return;
     }
-    setSubmitErrors({});
     setSubmitting(true);
     try {
       await onSubmit?.(result.data);
@@ -57,28 +55,78 @@ export function FormRenderer({ form, onSubmit, initialValues = {}, submitLabel =
   }
 
   return (
-    <form className="fw-form" onSubmit={handleSubmit} noValidate aria-label={form.title || "Form"}>
+    <form className="fw-root fw-form" data-theme={theme} onSubmit={handleSubmit} noValidate aria-label={form.title || "Form"}>
       {form.title && <h2 className="fw-title">{form.title}</h2>}
       {form.description && <p className="fw-description">{form.description}</p>}
-      {form.fields.map((field) =>
-        visible.has(field.id) ? (
-          <FieldControl
-            key={field.id}
-            field={field}
-            inputId={`${uid}-${field.id}`}
-            value={values[field.id]}
-            error={errorFor(field)}
-            disabled={disabled || submitting}
-            onChange={(v) => setValue(field.id, v)}
-            onBlur={() => touch(field.id)}
-          />
-        ) : null,
-      )}
+      <FieldList
+        form={form}
+        idPrefix={uid}
+        values={values}
+        errors={errors}
+        disabled={disabled || submitting}
+        onChange={(id, v) => setValues((prev) => ({ ...prev, [id]: v }))}
+        onBlur={(id) => setTouched((t) => (t[id] ? t : { ...t, [id]: true }))}
+      />
       {children}
       <button type="submit" className="fw-submit" disabled={disabled || submitting}>
         {submitting ? "Submitting…" : submitLabel}
       </button>
     </form>
+  );
+}
+
+export type FormFieldsProps = {
+  form: FormSchema;
+  values: FormValues;
+  onChange: (fieldId: string, value: FieldValue) => void;
+  /** Errors to show, keyed by field id (e.g. from the host's server-side validation). */
+  errors?: Record<string, string>;
+  onBlur?: (fieldId: string) => void;
+  disabled?: boolean;
+  theme?: Theme;
+};
+
+/**
+ * Just the questions, without a <form> or submit button, so a host can put
+ * them inside its own form (e.g. a booking form). The host owns the values
+ * and should validate with `validateSubmission` (ideally on its server too).
+ */
+export function FormFields({ form, values, onChange, errors = {}, onBlur, disabled, theme = "auto" }: FormFieldsProps) {
+  const uid = useId();
+  return (
+    <div className="fw-root fw-fields" data-theme={theme}>
+      <FieldList form={form} idPrefix={uid} values={values} errors={errors} disabled={disabled} onChange={onChange} onBlur={onBlur ?? (() => {})} />
+    </div>
+  );
+}
+
+function FieldList(props: {
+  form: FormSchema;
+  idPrefix: string;
+  values: FormValues;
+  errors: Record<string, string>;
+  disabled?: boolean;
+  onChange: (fieldId: string, value: FieldValue) => void;
+  onBlur: (fieldId: string) => void;
+}) {
+  const visible = useMemo(() => visibleFieldIds(props.form, props.values), [props.form, props.values]);
+  return (
+    <>
+      {props.form.fields.map((field) =>
+        visible.has(field.id) ? (
+          <FieldControl
+            key={field.id}
+            field={field}
+            inputId={`${props.idPrefix}-${field.id}`}
+            value={props.values[field.id]}
+            error={props.errors[field.id]}
+            disabled={props.disabled}
+            onChange={(v) => props.onChange(field.id, v)}
+            onBlur={() => props.onBlur(field.id)}
+          />
+        ) : null,
+      )}
+    </>
   );
 }
 
