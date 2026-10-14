@@ -4,7 +4,7 @@ A drag-and-drop form builder. Build a form from a palette of field types, set va
 
 The renderer is a separate package (`@formwise/renderer`). It also powers the intake form in [Slotwise](https://github.com/krishnanbhupathi/slotwise-booking), the companion booking tool.
 
-> Status: Day 5 of 7. Next: AI "describe your form", the renderer as Slotwise's intake form, and deploy (see [PROGRESS.md](PROGRESS.md)).
+**Live:** https://formwise-builder.vercel.app. It also powers the intake questions on [Slotwise](https://slotwise-booking-xi.vercel.app/book/demo-tutor/a-level-physics). Status and decisions: [PROGRESS.md](PROGRESS.md).
 
 ## What works today
 - **Palette → canvas:** drag a field type onto the canvas, or click it to insert it after the selected question.
@@ -22,6 +22,7 @@ The renderer is a separate package (`@formwise/renderer`). It also powers the in
   - Publish freezes a numbered version, and the public link `/f/<id>` serves it.
   - Edits stay private until you publish again.
 - **Submissions:** the server validates each submission with the same code as the browser. The owner sees a table and can export CSV.
+- **Describe your form:** Claude Haiku 5.5 drafts the questions, types and conditions from a sentence or two. The draft replaces the canvas in one undoable step.
 
 ## How it's built
 
@@ -67,6 +68,17 @@ Every exported form carries `version`, and a migration registry upgrades old for
 - A per-IP, per-form fixed-window rate limit in Postgres, keyed by a hashed IP, never the address.
 - The CSV is built in the browser, so the token never goes in a URL. Cells starting with `= + - @` are escaped against spreadsheet formula injection.
 
+**AI output is checked like any other untrusted input:**
+- The model fills in a small *draft* format through a strictly-typed tool: readable keys, option text, conditions by key.
+- The server turns the draft into a real schema with ids and runs `parseFormSchema`. If that fails, the exact errors go back to the model once.
+- Abuse limits: descriptions of 10–1000 characters, a per-IP rate limit, and a daily cap.
+- Each call logs its duration and token counts.
+- Tests and local e2e use a deterministic fake model, so CI spends nothing.
+
+**Embeddable in other apps.**
+- `<FormRenderer>` is a complete form.
+- `<FormFields>` is just the questions, for hosts that already have a `<form>`. Slotwise uses this inside its booking form and checks the answers on its server with `@formwise/renderer/core`.
+
 **File fields record metadata only.** Name, size and type are checked against the field's rules; there's no file storage in this MVP.
 
 ### Trade-offs
@@ -94,26 +106,29 @@ npm run typecheck && npm run lint
 ```
 
 ## Tests
-- **120 Vitest tests** in total (37 renderer, 65 builder, 18 API). Renderer and builder cover:
+- **137 Vitest tests** in total (39 renderer, 65 builder, 33 API).
+- **Renderer and builder** cover:
   - schema rules and versioning;
   - validation, including conditional and hidden fields, files and numbers;
-  - the renderer component;
+  - `<FormRenderer>` and `<FormFields>`;
   - the command reducer, with a 300-step random-edit property test;
   - undo/redo history and its shortcuts;
-  - the autosave controller (debounce, edits during a save, conflicts, retry, publish);
+  - the autosave controller;
   - CSV and the router.
-- The **18 API tests** run against PGlite (Postgres compiled to WASM) and cover:
+- **The 33 API tests** run against PGlite (Postgres compiled to WASM) and cover:
   - edit-token auth;
   - optimistic locking;
   - publishing;
   - server-side validation against old versions;
   - the honeypot and rate limits;
-  - pagination.
-- **13 Playwright tests (+1 skipped)** on desktop Chrome and Pixel 7, against the production build, the real API and Postgres. They cover:
+  - pagination;
+  - AI draft conversion, retry and endpoint limits.
+- **15 Playwright tests (+1 skipped)** on desktop Chrome and Pixel 7, against the production build, the real API and Postgres. They cover:
   - building with mouse and keyboard;
   - conditions and undo;
-  - save → publish → fill the public link → read and export the submission;
+  - describe-your-form (fake model);
+  - save → publish → fill → read and export submissions;
   - edit links in a fresh browser;
   - a stale second tab.
 
-  The mouse-drag test is skipped on mobile.
+  The mouse-drag test is skipped on mobile. The suite also runs against production: `E2E_BASE_URL=https://formwise-builder.vercel.app npm run e2e`.
