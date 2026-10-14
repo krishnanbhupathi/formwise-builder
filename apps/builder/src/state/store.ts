@@ -22,6 +22,7 @@ export type BuilderState = {
   /** Opens a form (e.g. from the server) with a fresh history. */
   load: (form: FormSchema) => void;
   select: (id: string | null) => void;
+  notify: (message: string) => void;
   dismissNotice: () => void;
 };
 
@@ -85,6 +86,7 @@ export const createBuilderStore = (initial: FormSchema = emptyForm(), { now = ()
       redo: () => show(history.redo(h)),
       load: (form) => show(history.initHistory(form)),
       select: (id) => set({ selectedId: id }),
+      notify: (message) => set({ notice: message }),
       dismissNotice: () => set({ notice: null }),
     };
   });

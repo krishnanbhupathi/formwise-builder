@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button, Shell } from "../components/Shell";
+import { DescribeButton } from "../components/DescribeDialog";
 import { UndoRedo } from "../components/UndoRedo";
 import { api } from "../lib/api";
 import { rememberForm } from "../lib/owned-forms";
@@ -39,6 +40,7 @@ export function NewForm() {
           {error && <span role="alert" className="text-sm text-danger">{error}</span>}
           <span className="text-sm text-muted">Not saved yet</span>
           <UndoRedo />
+          <DescribeButton />
           <Button variant="primary" onClick={save} disabled={saving}>{saving ? "Saving…" : "Save form"}</Button>
         </>
       }

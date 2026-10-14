@@ -21,7 +21,8 @@ export default defineConfig({
       // API on a test database, freshly migrated and emptied.
       command: "npm run db:migrate -w @formwise/api && psql \"$DATABASE_URL\" -qc 'TRUNCATE forms, rate_limits CASCADE' && npm start -w @formwise/api",
       url: "http://localhost:8788/api/health",
-      env: { DATABASE_URL: E2E_DATABASE_URL, API_PORT: "8788" },
+      // FORMWISE_FAKE_AI: a deterministic model, so e2e never spends API credits.
+      env: { DATABASE_URL: E2E_DATABASE_URL, API_PORT: "8788", FORMWISE_FAKE_AI: "1" },
       reuseExistingServer: false,
       timeout: 60_000,
     },

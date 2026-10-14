@@ -226,3 +226,59 @@ describe("reading submissions", () => {
     expect(second.body.nextBefore).toBeNull();
   });
 });
+
+describe("AI form generation", () => {
+  const okResult = (formId: string) => ({ ok: true as const, form: { ...intake, id: formId }, attempts: 1, inputTokens: 10, outputTokens: 5 });
+  const withAi = (generate: Parameters<typeof createApp>[0]["generate"]) => {
+    app = createApp({ db, now: () => clock, clientIp: () => ip, generate });
+  };
+  const ask = (json: unknown) => call("POST", "/ai/forms", { json });
+
+  beforeEach(() => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  it("is unavailable (503) when no model is configured", async () => {
+    expect((await ask({ description: "A contact form for my bakery" })).status).toBe(503);
+  });
+
+  it("returns the generated form, keeping the caller's form id", async () => {
+    const generate = vi.fn(async (_d: string, formId: string) => okResult(formId));
+    withAi(generate);
+    const res = await ask({ description: "  A contact form for my bakery  ", formId: "form_mine" });
+    expect(res.status).toBe(200);
+    expect(res.body.form.id).toBe("form_mine");
+    expect(generate).toHaveBeenCalledWith("A contact form for my bakery", "form_mine");
+  });
+
+  it("rejects descriptions that are too short or too long before calling the model", async () => {
+    const generate = vi.fn();
+    withAi(generate);
+    expect((await ask({ description: "form" })).status).toBe(400);
+    expect((await ask({ description: "x".repeat(LIMITS.aiDescriptionChars + 1) })).body.error).toMatch(/under 1000 characters/);
+    expect(generate).not.toHaveBeenCalled();
+  });
+
+  it("limits each IP, and caps everyone per day", async () => {
+    withAi(async (_d, formId) => okResult(formId));
+    for (let i = 0; i < LIMITS.aiPerIp.limit; i++) expect((await ask({ description: "A contact form please" })).status).toBe(200);
+    expect((await ask({ description: "A contact form please" })).status).toBe(429);
+
+    for (let i = 0; i < LIMITS.aiGlobal.limit - LIMITS.aiPerIp.limit; i++) {
+      ip = `10.1.${Math.floor(i / 9)}.${i % 9}`;
+      await ask({ description: "A contact form please" });
+    }
+    ip = "192.0.2.200";
+    expect((await ask({ description: "A contact form please" })).body.error).toMatch(/daily AI limit/);
+  });
+
+  it("maps an invalid result to 422 and a model failure to 502", async () => {
+    withAi(async () => ({ ok: false, error: "Couldn't build a valid form", attempts: 2, inputTokens: 1, outputTokens: 1 }));
+    expect(await ask({ description: "A contact form please" })).toEqual({ status: 422, body: { error: "Couldn't build a valid form" } });
+    withAi(async () => {
+      throw new Error("timeout");
+    });
+    expect((await ask({ description: "A contact form please" })).status).toBe(502);
+  });
+});

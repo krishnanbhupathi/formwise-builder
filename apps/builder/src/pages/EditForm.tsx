@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button, Centered, Shell } from "../components/Shell";
+import { DescribeButton } from "../components/DescribeDialog";
 import { UndoRedo } from "../components/UndoRedo";
 import type { OwnedForm } from "../lib/api";
 import { useAutosave, type SaveStatus } from "../lib/autosave";
@@ -64,6 +65,7 @@ function Editor({ id, token, initial }: { id: string; token: string; initial: Ow
         <>
           <SaveIndicator status={status} error={error} onRetry={() => void saver.save()} />
           <UndoRedo />
+          <DescribeButton />
           <a
             href={`/edit/${id}/submissions`}
             onClick={async (e) => {

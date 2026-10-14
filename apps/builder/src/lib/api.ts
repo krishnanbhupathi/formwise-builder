@@ -45,6 +45,7 @@ export const api = {
   publish: (id: string, token: string, revision: number) => request<OwnedForm>("POST", `/forms/${id}/publish`, { token, json: { revision } }),
   submissions: (id: string, token: string, before?: string) =>
     request<SubmissionPage>("GET", `/forms/${id}/submissions${before ? `?before=${encodeURIComponent(before)}` : ""}`, { token }),
+  generateForm: (description: string, formId: string) => request<{ form: FormSchema }>("POST", "/ai/forms", { json: { description, formId } }),
   publicForm: (id: string) => request<{ form: FormSchema; version: number }>("GET", `/public/forms/${id}`),
   submit: (id: string, version: number, values: FormValues, website: string) =>
     request<{ id: string }>("POST", `/public/forms/${id}/submissions`, { json: { version, values, website } }),

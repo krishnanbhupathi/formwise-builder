@@ -7,6 +7,7 @@ import { customAlphabet } from "nanoid";
 import { z } from "zod";
 import type { Db } from "./db/index.js";
 import { forms, formVersions, submissions } from "./db/schema.js";
+import type { GenerateResult } from "./ai/generate.js";
 import { allow } from "./lib/rate-limit.js";
 import { hashIp, hashToken, newEditToken, tokenMatches } from "./lib/tokens.js";
 
@@ -19,6 +20,10 @@ export const LIMITS = {
   /** New forms per IP. */
   createForm: { limit: 20, windowMs: 60 * 60_000 },
   pageSize: 50,
+  /** AI generations per IP, and across everyone per day (cost guard). */
+  aiPerIp: { limit: 10, windowMs: 60 * 60_000 },
+  aiGlobal: { limit: 200, windowMs: 24 * 60 * 60_000 },
+  aiDescriptionChars: 1000,
 } as const;
 
 export type AppDeps = {
@@ -26,6 +31,8 @@ export type AppDeps = {
   now?: () => Date;
   /** The caller's IP. On Vercel, x-forwarded-for is set by the platform (client values are overwritten). */
   clientIp?: (c: Context) => string;
+  /** Turns a description into a form; undefined when no AI key is configured. */
+  generate?: (description: string, formId: string) => Promise<GenerateResult>;
 };
 
 const defaultClientIp = (c: Context) => c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || "local";
@@ -47,7 +54,7 @@ function acceptForm(input: unknown, id: string): FormSchema {
   return { ...parsed.form, id };
 }
 
-export function createApp({ db, now = () => new Date(), clientIp = defaultClientIp }: AppDeps) {
+export function createApp({ db, now = () => new Date(), clientIp = defaultClientIp, generate }: AppDeps) {
   const app = new Hono().basePath("/api");
 
   app.use(bodyLimit({ maxSize: 256 * 1024, onError: (c) => c.json({ error: "Request too large" }, 413) }));
@@ -154,6 +161,38 @@ export function createApp({ db, now = () => new Date(), clientIp = defaultClient
       versions: Object.fromEntries(versions.map((v) => [v.version, v.schema])),
       nextBefore: rows.length > LIMITS.pageSize && last ? `${last.createdAt.toISOString()}|${last.id}` : null,
     });
+  });
+
+  // --- AI: describe a form ---------------------------------------------------
+
+  app.post("/ai/forms", async (c) => {
+    if (!generate) return c.json({ error: "AI form generation isn't available right now." }, 503);
+    const { description, formId } = await body(
+      c,
+      z.object({
+        description: z.string().trim().min(10, "Describe the form in a few words (at least 10 characters)").max(LIMITS.aiDescriptionChars, `Keep the description under ${LIMITS.aiDescriptionChars} characters`),
+        formId: z.string().min(1).max(64).optional(),
+      }),
+    );
+    const t = now();
+    if (!(await allow(db, `ai:${hashIp(clientIp(c))}`, LIMITS.aiPerIp.limit, LIMITS.aiPerIp.windowMs, t))) {
+      return c.json({ error: "You've generated a lot of forms recently. Try again in an hour." }, 429);
+    }
+    if (!(await allow(db, "ai:global", LIMITS.aiGlobal.limit, LIMITS.aiGlobal.windowMs, t))) {
+      return c.json({ error: "The demo's daily AI limit is used up. Try again tomorrow." }, 429);
+    }
+    const started = performance.now();
+    let result: GenerateResult;
+    try {
+      result = await generate(description, formId ?? `form_${newFormId()}`);
+    } catch (err) {
+      console.error(JSON.stringify({ event: "ai_generate", ok: false, ms: Math.round(performance.now() - started), error: String(err).slice(0, 200) }));
+      return c.json({ error: "The AI service didn't respond. Please try again." }, 502);
+    }
+    // One line per call: the source of the latency and token figures in the case study.
+    console.log(JSON.stringify({ event: "ai_generate", ok: result.ok, ms: Math.round(performance.now() - started), attempts: result.attempts, inputTokens: result.inputTokens, outputTokens: result.outputTokens }));
+    if (!result.ok) return c.json({ error: result.error }, 422);
+    return c.json({ form: result.form });
   });
 
   // --- Public endpoints (share link) -----------------------------------------
