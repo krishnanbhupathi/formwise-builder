@@ -1,18 +1,31 @@
 import type { ReactNode } from "react";
 import { linkProps } from "../lib/router";
+import { buttonLook } from "./button-look";
 
-/** App chrome: logo, "My forms", and page-specific actions on the right. */
-export function Shell({ actions, children }: { actions?: ReactNode; children: ReactNode }) {
+/** The Formwise mark: a printed field box with its label filled in. */
+export function Logo({ className = "size-7" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" aria-hidden="true" className={className}>
+      <rect x="3" y="3" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="3.5" />
+      <rect x="3" y="3" width="12" height="7" fill="currentColor" />
+      <path d="M8 18h16M8 23.5h10" stroke="var(--ledger)" strokeWidth="3" />
+    </svg>
+  );
+}
+
+/** App chrome: logo, "My forms", an optional form number, and page-specific actions on the right. */
+export function Shell({ actions, docLabel, children }: { actions?: ReactNode; docLabel?: ReactNode; children: ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line bg-panel px-4 py-2.5">
-        <a {...linkProps("/")} className="flex items-center gap-2 rounded focus-visible:outline-2 focus-visible:outline-accent">
-          <img src="/favicon.svg" alt="" className="size-7" />
-          <span className="text-base font-semibold">Formwise</span>
+      <header className="flex flex-wrap items-center gap-x-5 gap-y-2 border-b-2 border-ink bg-panel px-4 py-2.5">
+        <a {...linkProps("/")} className="flex items-center gap-2 text-accent-dark focus-visible:outline-2 focus-visible:outline-offset-2">
+          <Logo />
+          <span className="text-xl font-black tracking-[-0.03em]">Formwise</span>
         </a>
-        <a {...linkProps("/forms")} className="rounded px-1 text-sm text-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-accent">
+        <a {...linkProps("/forms")} className="px-1 text-sm font-medium text-muted underline-offset-4 hover:text-ink hover:underline focus-visible:outline-2">
           My forms
         </a>
+        {docLabel && <span className="label-mono hidden text-muted md:inline">{docLabel}</span>}
         <div className="ml-auto flex flex-wrap items-center gap-2">{actions}</div>
       </header>
       {children}
@@ -20,21 +33,14 @@ export function Shell({ actions, children }: { actions?: ReactNode; children: Re
   );
 }
 
+
 export function Button({
   children,
   variant = "secondary",
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" }) {
-  const look =
-    variant === "primary"
-      ? "bg-accent text-white dark:text-slate-950 hover:opacity-90"
-      : "border border-line bg-panel text-ink hover:border-accent";
   return (
-    <button
-      type="button"
-      {...props}
-      className={`inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50 ${look} ${props.className ?? ""}`}
-    >
+    <button type="button" {...props} className={`${buttonLook[variant]} ${props.className ?? ""}`}>
       {children}
     </button>
   );

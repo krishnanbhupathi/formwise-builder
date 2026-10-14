@@ -39,9 +39,9 @@ export function DescribeButton() {
   return (
     <>
       <Button onClick={() => ref.current?.showModal()}>
-        <span aria-hidden="true">✨</span> Describe
+        Describe it
       </Button>
-      <dialog ref={ref} aria-labelledby="describe-title" className="m-auto w-[min(36rem,calc(100vw-2rem))] rounded-xl border border-line bg-panel p-0 text-ink backdrop:bg-black/40">
+      <dialog ref={ref} aria-labelledby="describe-title" className="m-auto w-[min(36rem,calc(100vw-2rem))] border-2 border-ink bg-panel p-0 text-ink shadow-[6px_6px_0_var(--ink)] backdrop:bg-ink/45">
         <form
           className="flex flex-col gap-4 p-5"
           onSubmit={(e) => {
@@ -50,11 +50,11 @@ export function DescribeButton() {
           }}
         >
           <div>
-            <h2 id="describe-title" className="text-lg font-semibold">Describe your form</h2>
+            <h2 id="describe-title" className="text-2xl font-black tracking-tight text-accent-dark">Describe your form</h2>
             <p className="text-sm text-muted">Claude drafts the questions, types and conditions. It replaces the current form; undo brings it back.</p>
           </div>
-          <label className="flex flex-col gap-1.5 text-sm font-medium">
-            What should the form collect?
+          <label className="flex flex-col gap-1.5">
+            <span className="label-mono text-muted">What should the form collect?</span>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -62,17 +62,17 @@ export function DescribeButton() {
               rows={5}
               autoFocus
               placeholder="e.g. A booking enquiry form for a wedding photographer…"
-              className="rounded-md border border-line bg-surface px-3 py-2 text-sm font-normal"
+              className="border-[1.5px] border-ink bg-panel px-3 py-2 text-sm"
             />
           </label>
-          <div className="flex items-center justify-between text-xs text-muted">
+          <div className="flex items-center justify-between font-mono text-xs text-muted">
             <span>{text.length}/{MAX}</span>
           </div>
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-muted">Try an example</span>
+            <span className="label-mono text-muted">Try an example</span>
             <div className="flex flex-wrap gap-2">
               {EXAMPLES.map((ex) => (
-                <button key={ex} type="button" onClick={() => setText(ex)} className="rounded-full border border-line px-3 py-1 text-left text-xs hover:border-accent">
+                <button key={ex} type="button" onClick={() => setText(ex)} className="border border-ink bg-panel px-2.5 py-1 text-left text-xs font-medium hover:bg-canary">
                   {ex.split(":")[0]}
                 </button>
               ))}

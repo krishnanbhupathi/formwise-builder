@@ -69,9 +69,9 @@ export function Builder() {
   return (
     <div className="flex flex-1 flex-col">
       {notice && (
-        <div role="status" className="flex items-start justify-between gap-3 border-b border-line bg-accent-soft px-4 py-2 text-sm">
+        <div role="status" className="fw-carbon flex items-start justify-between gap-3 border-x-0 border-t-0 px-4 py-2 text-sm">
           <span>{notice}</span>
-          <button type="button" onClick={dismissNotice} className="shrink-0 font-medium text-accent">Dismiss</button>
+          <button type="button" onClick={dismissNotice} className="shrink-0 font-semibold underline underline-offset-2">Dismiss</button>
         </div>
       )}
 
@@ -84,13 +84,13 @@ export function Builder() {
         onDragCancel={() => { setDragging(null); setDropTargetId(null); }}
         accessibility={{ announcements: useAnnouncements() }}
       >
-        <main className="mx-auto grid w-full max-w-[1400px] flex-1 grid-cols-1 gap-6 p-4 lg:grid-cols-[12rem_minmax(0,1fr)_24rem]">
+        <main className="mx-auto grid w-full max-w-[1400px] flex-1 grid-cols-1 gap-6 p-4 lg:grid-cols-[12rem_minmax(0,1fr)_24rem] lg:pt-6">
           <aside className="lg:sticky lg:top-4 lg:self-start">
             <Palette onAdd={addField} />
           </aside>
           <Canvas dropTargetId={dropTargetId} />
           <aside aria-label="Inspector" className="flex flex-col gap-3 lg:sticky lg:top-4 lg:max-h-[calc(100dvh-2rem)] lg:self-start lg:overflow-y-auto">
-            <div role="tablist" aria-label="Inspector" className="grid grid-cols-2 rounded-lg border border-line bg-panel p-1">
+            <div role="tablist" aria-label="Inspector" className="grid grid-cols-2 border-[1.5px] border-ink bg-panel">
               {(["properties", "preview"] as const).map((t) => (
                 <button
                   key={t}
@@ -100,13 +100,13 @@ export function Builder() {
                   aria-controls={`panel-${t}`}
                   id={`tab-${t}`}
                   onClick={() => setTab(t)}
-                  className={`rounded-md py-1.5 text-sm font-medium ${tab === t ? "bg-accent text-white dark:text-slate-950" : "text-muted hover:text-ink"}`}
+                  className={`py-2 text-sm font-semibold first:border-r-[1.5px] first:border-ink focus-visible:outline-2 focus-visible:-outline-offset-4 ${tab === t ? "bg-ink text-panel" : "text-muted hover:bg-band hover:text-ink"}`}
                 >
                   {t === "properties" ? "Properties" : "Preview"}
                 </button>
               ))}
             </div>
-            <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="rounded-xl border border-line bg-panel p-4">
+            <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="border-[1.5px] border-ink bg-panel p-4">
               {tab === "properties" ? <PropertiesPanel /> : <Preview />}
             </div>
           </aside>

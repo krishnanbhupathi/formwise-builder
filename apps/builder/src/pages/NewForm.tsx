@@ -35,6 +35,7 @@ export function NewForm() {
 
   return (
     <Shell
+      docLabel="New form · draft"
       actions={
         <>
           {error && <span role="alert" className="text-sm text-danger">{error}</span>}

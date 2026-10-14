@@ -1,6 +1,6 @@
 import { FormRenderer, type FormSchema, type FormValues } from "@formwise/renderer";
 import { useEffect, useRef, useState } from "react";
-import { Button, Centered } from "../components/Shell";
+import { Button, Centered, Logo } from "../components/Shell";
 import { api, ApiError } from "../lib/api";
 
 /** The public share-link page: the published form, nothing else from the builder. */
@@ -35,18 +35,19 @@ export function Fill({ id }: { id: string }) {
   }
 
   return (
-    <div className="min-h-dvh bg-surface">
+    <div className="fw-paper min-h-dvh bg-surface">
       <Centered>
-        {state.error && <p className="rounded-xl border border-line bg-panel p-6">{state.error}</p>}
+        {state.error && <p className="border-[1.5px] border-ink bg-panel p-6">{state.error}</p>}
         {!state.form && !state.error && <p className="text-muted">Loading…</p>}
         {state.form && done && (
-          <div role="status" className="flex flex-col items-start gap-3 rounded-xl border border-line bg-panel p-6">
-            <h1 className="text-xl font-semibold">Thanks, your answers were sent.</h1>
+          <div role="status" className="fw-sheet flex flex-col items-start gap-4 py-10">
+            <span className="fw-stamp px-3 py-1.5 text-sm">Received</span>
+            <h1 className="text-[1.75rem] leading-tight font-black tracking-[-0.025em] text-accent-dark">Thanks, your answers were sent.</h1>
             <Button onClick={() => { setDone(false); setRun((r) => r + 1); }}>Submit another response</Button>
           </div>
         )}
         {state.form && !done && (
-          <div className="rounded-xl border border-line bg-panel p-5 sm:p-8">
+          <div className="fw-sheet py-8">
             <FormRenderer key={run} form={state.form} onSubmit={onSubmit}>
               {/* Honeypot: hidden from people and assistive tech; bots that fill every input reveal themselves. */}
               <div aria-hidden="true" style={{ position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" }}>
@@ -59,7 +60,10 @@ export function Fill({ id }: { id: string }) {
             </FormRenderer>
           </div>
         )}
-        <p className="text-center text-xs text-muted">Made with Formwise</p>
+        <a href="/" className="label-mono flex items-center justify-center gap-2 text-muted hover:text-ink">
+          <Logo className="size-4 text-accent-dark" />
+          Made with Formwise
+        </a>
       </Centered>
     </div>
   );

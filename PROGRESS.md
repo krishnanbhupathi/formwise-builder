@@ -64,6 +64,7 @@ Spec: "Case Study Build Plan" (Claude Doc). Formwise is days 4–6 of the week (
 | Day 6 | Don't publish to npm; Slotwise vendors the renderer | Krishna |
 | Day 6 | Model fills a draft format, server assigns ids | Fewer invalid outputs than asking for raw ids/cross-references; validated + one retry |
 | Day 6 | Claude Haiku 5.5 | Fast and cheap; quality checked on a real description |
+| Day 7 | Visual identity: green-bar form paper (Schibsted Grotesk + IBM Plex Mono, square boxes, canary condition tags, publish stamp), light only | The old UI read as a generic template; fonts self-hosted so there are no third-party requests (Krishna approved the direction) |
 | Day 7 | Claude Opus 5.5 via structured outputs | Better forms (no duplicated questions); slower than Haiku (see docs/measurements/ai-opus-2026-10-15.md). Model is an env var, so switching back is a config change |
 | Day 6 | Cost guards: per-IP + global daily cap in Postgres | Public demo on Krishna's key |
 | Day 5 | API entry `api/index.ts` + `/api/(.*)` rewrite | Vercel's `[[...route]]` catch-all didn't match multi-segment paths outside Next.js |

@@ -1,5 +1,6 @@
 import type { FormSchema } from "@formwise/renderer";
 import { useEffect, useMemo, useState } from "react";
+import { buttonLook } from "../components/button-look";
 import { Button, Shell } from "../components/Shell";
 import { api, type Submission, type SubmissionPage } from "../lib/api";
 import { formatValue, submissionColumns, toCsv } from "../lib/csv";
@@ -80,9 +81,10 @@ export function Submissions({ id }: { id: string }) {
   const failure = error ?? loadError;
   return (
     <Shell
+      docLabel={<>Form <span className="normal-case">{id}</span> · submissions</>}
       actions={
         <>
-          <a {...linkProps(`/edit/${id}`)} className="inline-flex h-9 items-center rounded-lg border border-line bg-panel px-3 text-sm font-medium hover:border-accent">
+          <a {...linkProps(`/edit/${id}`)} className={buttonLook.secondary}>
             Back to editor
           </a>
           <Button variant="primary" onClick={exportCsv} disabled={busy || !rows.length}>Export CSV</Button>
@@ -91,36 +93,36 @@ export function Submissions({ id }: { id: string }) {
     >
       <main className="mx-auto flex w-full max-w-[1400px] flex-col gap-4 p-4">
         <div>
-          <h1 className="text-xl font-semibold">{form?.form.title || "Submissions"}</h1>
-          {total !== null && <p className="text-sm text-muted">{total === 1 ? "1 submission" : `${total} submissions`}</p>}
+          <h1 className="text-[2.25rem] leading-tight font-black tracking-[-0.03em] text-accent-dark">{form?.form.title || "Submissions"}</h1>
+          {total !== null && <p className="label-mono text-muted">{total === 1 ? "1 submission" : `${total} submissions`}</p>}
         </div>
         {failure && <p role="alert" className="text-danger">{failure}</p>}
         {total === 0 && (
-          <p className="rounded-xl border border-line bg-panel p-6 text-muted">
+          <p className="border-[1.5px] border-dashed border-ink bg-panel p-6 text-muted">
             No submissions yet. {form?.publishedVersion ? <>Share the public link: <a className="text-accent underline" href={`/f/${id}`}>{location.origin}/f/{id}</a></> : "Publish the form, then share its public link."}
           </p>
         )}
         {rows.length > 0 && (
-          <div className="overflow-x-auto rounded-xl border border-line bg-panel">
+          <div className="overflow-x-auto border-[1.5px] border-ink bg-panel">
             <table className="w-full min-w-max text-left text-sm">
               <caption className="sr-only">Submissions, newest first</caption>
-              <thead className="border-b border-line text-muted">
+              <thead className="border-b-2 border-ink bg-band">
                 <tr>
-                  <th scope="col" className="px-3 py-2 font-medium">Submitted</th>
+                  <th scope="col" className="label-mono px-3 py-2.5 text-ink">Submitted</th>
                   {columns.map((c) => (
-                    <th key={c.id} scope="col" className="max-w-64 px-3 py-2 font-medium">{c.label}</th>
+                    <th key={c.id} scope="col" className="label-mono max-w-64 px-3 py-2.5 text-ink">{c.label}</th>
                   ))}
-                  <th scope="col" className="px-3 py-2 font-medium">Version</th>
+                  <th scope="col" className="label-mono px-3 py-2.5 text-ink">Version</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((r) => (
-                  <tr key={r.id} className="border-b border-line last:border-0 align-top">
-                    <td className="px-3 py-2 whitespace-nowrap text-muted">{when.format(new Date(r.createdAt))}</td>
+                  <tr key={r.id} className="border-b border-line align-top last:border-0 even:bg-band/50">
+                    <td className="px-3 py-2 font-mono text-xs whitespace-nowrap text-muted">{when.format(new Date(r.createdAt))}</td>
                     {columns.map((c) => (
                       <td key={c.id} className="max-w-64 px-3 py-2 break-words whitespace-pre-wrap">{formatValue(r.data[c.id])}</td>
                     ))}
-                    <td className="px-3 py-2 text-muted">v{r.version}</td>
+                    <td className="px-3 py-2 font-mono text-xs text-muted">v{r.version}</td>
                   </tr>
                 ))}
               </tbody>

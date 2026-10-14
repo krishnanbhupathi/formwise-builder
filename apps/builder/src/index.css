@@ -1,44 +1,153 @@
 @import "tailwindcss";
+@import "@fontsource-variable/schibsted-grotesk/wght.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
+@import "@fontsource/ibm-plex-mono/latin-600.css";
 
-/* Colour tokens, switched for dark mode below; used as bg-surface, text-ink… */
+/*
+ * Formwise identity: continuous green-bar form paper.
+ * Fields are printed boxes with a numbered corner label, conditions are canary
+ * carbon tags, publishing is a red rubber stamp. Light only: it's paper.
+ *
+ *   green (ledger) = you can act · canary = depends on another answer ·
+ *   red (stamp)    = required marks, errors and the publish stamp only
+ */
 @theme {
-  --color-surface: var(--surface);
-  --color-panel: var(--panel);
-  --color-line: var(--line);
+  --color-surface: var(--paper);
+  --color-panel: var(--paper);
+  --color-band: var(--band);
+  --color-line: var(--rule);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
-  --color-accent: var(--accent);
-  --color-accent-soft: var(--accent-soft);
-  --color-danger: var(--danger);
+  --color-accent: var(--ledger);
+  --color-accent-dark: var(--ledger-dark);
+  --color-accent-soft: var(--band);
+  --color-canary: var(--canary);
+  --color-danger: var(--stamp);
+
+  --font-sans: "Schibsted Grotesk Variable", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+
+  /* Printed forms have square corners. */
+  --radius-xs: 0;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
 }
 
 :root {
-  --surface: #f8fafc;
-  --panel: #ffffff;
-  --line: #e2e8f0;
-  --ink: #0f172a;
-  --muted: #64748b;
-  --accent: #4f46e5;
-  --accent-soft: #eef2ff;
-  --danger: #b91c1c;
-  color-scheme: light dark;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --surface: #020617;
-    --panel: #0f172a;
-    --line: #1e293b;
-    --ink: #e2e8f0;
-    --muted: #94a3b8;
-    --accent: #818cf8;
-    --accent-soft: #1e1b4b;
-    --danger: #f87171;
-  }
+  --paper: #fcfcf8;
+  --band: #e4f0e2;
+  --rule: #c9d6c6;
+  --ink: #17191c;
+  --muted: #535a56;
+  --ledger: #17614a;
+  --ledger-dark: #0d3b2d;
+  --canary: #f6e37a;
+  --stamp: #c3302a;
+  color-scheme: light;
 }
 
 body {
   margin: 0;
-  background: var(--surface);
+  background: var(--paper);
   color: var(--ink);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
+
+/* The "printed form" voice: field numbers, type codes, corner labels. Never full sentences. */
+@utility label-mono {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+/* Green-bar sheet with tractor-feed margins. */
+.fw-sheet {
+  position: relative;
+  padding: 1.25rem 2.75rem 2rem;
+  background: repeating-linear-gradient(to bottom, var(--band) 0 4.25rem, var(--paper) 4.25rem 8.5rem);
+  border-inline: 1px solid var(--rule);
+}
+.fw-sheet::before,
+.fw-sheet::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1.625rem;
+  background: var(--paper) radial-gradient(circle at 0.8125rem 1.0625rem, var(--rule) 0 0.3125rem, transparent 0.35rem) 0 0 / 1.625rem 2.125rem repeat-y;
+  border: 0 dashed var(--rule);
+}
+.fw-sheet::before { left: 0; border-right-width: 1px; }
+.fw-sheet::after { right: 0; border-left-width: 1px; }
+@media (max-width: 40rem) {
+  .fw-sheet { padding-inline: 1.75rem; }
+  .fw-sheet::before, .fw-sheet::after {
+    width: 1rem;
+    background-image: radial-gradient(circle at 0.5rem 1.0625rem, var(--rule) 0 0.22rem, transparent 0.26rem);
+    background-size: 1rem 2.125rem;
+  }
+}
+
+/* Carbon tag pinned to a box edge. */
+.fw-carbon {
+  background: var(--canary);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+}
+
+/* Rubber stamp. */
+.fw-stamp {
+  color: var(--stamp);
+  border: 2.5px solid var(--stamp);
+  border-radius: 3px;
+  transform: rotate(-4deg);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Hard offset shadow: the one thing you're about to act on. */
+.fw-press {
+  box-shadow: 3px 3px 0 var(--ledger-dark);
+  transition: transform 80ms, box-shadow 80ms;
+}
+.fw-press:not(:disabled):active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ledger-dark); }
+@media (prefers-reduced-motion: reduce) { .fw-press { transition: none; } }
+
+:focus-visible { outline-color: var(--ledger); }
+
+/* Renderer on Formwise's own pages (preview and public link): printed boxes. */
+.fw-paper .fw-root {
+  --fw-font: var(--font-sans);
+  --fw-text: var(--ink);
+  --fw-muted: var(--muted);
+  --fw-border: var(--ink);
+  --fw-bg: var(--paper);
+  --fw-accent: var(--ledger);
+  --fw-accent-text: #fff;
+  --fw-error: var(--stamp);
+  --fw-radius: 0;
+  --fw-border-width: 1.5px;
+  counter-reset: fw-q;
+}
+.fw-paper .fw-title { font-weight: 900; font-size: 1.75rem; letter-spacing: -0.025em; color: var(--ledger-dark); line-height: 1.1; }
+.fw-paper .fw-heading h3 { font-weight: 800; color: var(--ledger-dark); border-bottom: 2px solid var(--ink); padding-bottom: 0.25rem; }
+.fw-paper .fw-field:not(.fw-heading) { counter-increment: fw-q; }
+.fw-paper .fw-field:not(.fw-heading) > .fw-label::before,
+.fw-paper .fw-field:not(.fw-heading) > .fw-check::before {
+  content: counter(fw-q, decimal-leading-zero);
+  font: 600 0.6875rem/1 var(--font-mono);
+  letter-spacing: 0.07em;
+  color: var(--ledger);
+  margin-right: 0.5rem;
+  vertical-align: 0.1em;
+}
+.fw-paper .fw-submit { box-shadow: 3px 3px 0 var(--ledger-dark); }

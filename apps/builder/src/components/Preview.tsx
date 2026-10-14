@@ -11,18 +11,18 @@ export function Preview() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold">Live preview</h2>
-        <button type="button" onClick={() => { setRun((r) => r + 1); setSubmitted(null); }} className="rounded-md px-2 py-1 text-sm text-accent hover:bg-accent-soft">
+        <h2 className="label-mono text-ink">Live preview</h2>
+        <button type="button" onClick={() => { setRun((r) => r + 1); setSubmitted(null); }} className="px-1 py-1 text-sm font-semibold text-accent underline-offset-4 hover:underline">
           Reset answers
         </button>
       </div>
-      <div className="rounded-xl border border-line bg-panel p-4">
+      <div className="fw-paper border border-dashed border-ink bg-panel p-4">
         <FormRenderer key={run} form={form} onSubmit={setSubmitted} submitLabel="Test submit" />
       </div>
       {submitted && (
         <div role="status" className="flex flex-col gap-2">
-          <h3 className="text-sm font-semibold">Submitted data</h3>
-          <pre className="overflow-x-auto rounded-lg bg-accent-soft p-3 text-xs">{JSON.stringify(submitted, null, 2)}</pre>
+          <h3 className="label-mono text-ink">Submitted data</h3>
+          <pre className="fw-carbon overflow-x-auto p-3 font-mono text-xs">{JSON.stringify(submitted, null, 2)}</pre>
         </div>
       )}
     </div>

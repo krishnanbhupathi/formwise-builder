@@ -107,7 +107,7 @@ function OptionsEditor({ options, onChange }: { options: SelectOption[]; onChang
 
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-1 text-sm font-medium">Options</legend>
+      <legend className="label-mono mb-1.5 text-muted">Options</legend>
       <ol className="flex flex-col gap-1.5">
         {options.map((o, i) => (
           <li key={o.id} className="flex items-center gap-1">
@@ -117,7 +117,7 @@ function OptionsEditor({ options, onChange }: { options: SelectOption[]; onChang
               maxLength={200}
               onChange={(e) => set(i, e.target.value)}
               onBlur={(e) => !e.target.value.trim() && set(i, `Option ${i + 1}`)}
-              className="min-w-0 flex-1 rounded-md border border-line bg-panel px-2 py-1.5 text-sm"
+              className="min-w-0 flex-1 border-[1.5px] border-ink bg-panel px-2.5 py-1.5 text-sm"
             />
             <SmallButton label={`Move option ${i + 1} up`} disabled={i === 0} onClick={() => move(i, -1)}>↑</SmallButton>
             <SmallButton label={`Move option ${i + 1} down`} disabled={i === options.length - 1} onClick={() => move(i, 1)}>↓</SmallButton>
@@ -130,7 +130,7 @@ function OptionsEditor({ options, onChange }: { options: SelectOption[]; onChang
         type="button"
         onClick={() => onChange([...options, { id: newOptionId(), label: `Option ${options.length + 1}` }])}
         disabled={options.length >= 100}
-        className="self-start rounded-md px-2 py-1 text-sm font-medium text-accent hover:bg-accent-soft"
+        className="self-start px-1 py-1 text-sm font-semibold text-accent underline-offset-4 hover:underline"
       >
         + Add option
       </button>
@@ -151,28 +151,28 @@ function ConditionEditor({ field, candidates, update }: { field: Field; candidat
   const setEquals = (equals: ShowIf["equals"], options?: DispatchOptions) => target && update({ showIf: { fieldId: target.id, equals } }, options);
 
   return (
-    <fieldset className="flex flex-col gap-2 border-t border-line pt-4">
+    <fieldset className="fw-carbon flex flex-col gap-2 p-3">
       <legend className="sr-only">Visibility</legend>
-      <label htmlFor={`${id}-target`} className="text-sm font-medium">Show this question</label>
+      <label htmlFor={`${id}-target`} className="label-mono">Show this question</label>
       {candidates.length === 0 ? (
-        <p className="text-sm text-muted">Always. To show it only for certain answers, add a dropdown, checkbox or short-answer question above it.</p>
+        <p className="text-sm">Always. To show it only for certain answers, add a dropdown, checkbox or short-answer question above it.</p>
       ) : (
         <>
-          <select id={`${id}-target`} value={target?.id ?? ""} onChange={(e) => pickTarget(e.target.value)} className="rounded-md border border-line bg-panel px-2 py-1.5 text-sm">
+          <select id={`${id}-target`} value={target?.id ?? ""} onChange={(e) => pickTarget(e.target.value)} className="border-[1.5px] border-ink bg-panel px-2.5 py-1.5 text-sm">
             <option value="">Always</option>
             {candidates.map((c) => (
               <option key={c.id} value={c.id}>Only if “{fieldName(c)}”…</option>
             ))}
           </select>
           {target?.type === "select" && (
-            <select aria-label="is" value={String(rule!.equals)} onChange={(e) => setEquals(e.target.value)} className="rounded-md border border-line bg-panel px-2 py-1.5 text-sm">
+            <select aria-label="is" value={String(rule!.equals)} onChange={(e) => setEquals(e.target.value)} className="border-[1.5px] border-ink bg-panel px-2.5 py-1.5 text-sm">
               {target.options.map((o) => (
                 <option key={o.id} value={o.id}>is “{o.label}”</option>
               ))}
             </select>
           )}
           {target?.type === "checkbox" && (
-            <select aria-label="is" value={String(rule!.equals)} onChange={(e) => setEquals(e.target.value === "true")} className="rounded-md border border-line bg-panel px-2 py-1.5 text-sm">
+            <select aria-label="is" value={String(rule!.equals)} onChange={(e) => setEquals(e.target.value === "true")} className="border-[1.5px] border-ink bg-panel px-2.5 py-1.5 text-sm">
               <option value="true">is ticked</option>
               <option value="false">is not ticked</option>
             </select>
@@ -193,7 +193,7 @@ function ConditionEditor({ field, candidates, update }: { field: Field; candidat
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-sm font-semibold">{title}</h2>
+      <h2 className="label-mono border-b-2 border-ink pb-2 text-ink">{title}</h2>
       {children}
     </div>
   );
@@ -213,11 +213,11 @@ function TextInput(props: {
   placeholder?: string;
 }) {
   const id = useId();
-  const cls = "w-full rounded-md border border-line bg-panel px-2 py-1.5 text-sm";
+  const cls = "w-full border-[1.5px] border-ink bg-panel px-2.5 py-1.5 text-sm";
   const onChange = props.onChange;
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-sm font-medium">{props.label}</label>
+      <label htmlFor={id} className="label-mono text-muted">{props.label}</label>
       {props.multiline ? (
         <textarea id={id} rows={3} className={cls} value={props.value} maxLength={props.maxLength} onChange={(e) => onChange(e.target.value)} />
       ) : (
@@ -231,7 +231,7 @@ function NumberInput(props: { label: string; value: number | undefined; onChange
   const id = useId();
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-sm font-medium">{props.label}</label>
+      <label htmlFor={id} className="label-mono text-muted">{props.label}</label>
       <input
         id={id}
         type="number"
@@ -246,7 +246,7 @@ function NumberInput(props: { label: string; value: number | undefined; onChange
           const clamped = Math.min(props.max ?? Infinity, Math.max(props.min ?? -Infinity, props.integer ? Math.round(n) : n));
           props.onChange(clamped);
         }}
-        className="w-full rounded-md border border-line bg-panel px-2 py-1.5 text-sm"
+        className="w-full border-[1.5px] border-ink bg-panel px-2.5 py-1.5 text-sm"
       />
     </div>
   );
@@ -261,7 +261,7 @@ function RangeWarning({ min, max }: { min?: number; max?: number }) {
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="size-4 accent-[var(--accent)]" />
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="size-4 accent-[var(--ledger)]" />
       {label}
     </label>
   );
@@ -269,7 +269,7 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
 
 function SmallButton({ label, onClick, disabled, children }: { label: string; onClick: () => void; disabled?: boolean; children: string }) {
   return (
-    <button type="button" aria-label={label} title={label} onClick={onClick} disabled={disabled} className="grid size-7 place-items-center rounded text-sm text-muted hover:bg-accent-soft disabled:opacity-30">
+    <button type="button" aria-label={label} title={label} onClick={onClick} disabled={disabled} className="grid size-7 place-items-center text-sm text-muted hover:bg-band hover:text-ink disabled:opacity-30">
       <span aria-hidden="true">{children}</span>
     </button>
   );

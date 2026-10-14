@@ -11,6 +11,7 @@
   --fw-accent-text: #ffffff;
   --fw-error: #b91c1c;
   --fw-radius: 8px;
+  --fw-border-width: 1px;
   font-family: var(--fw-font);
   color: var(--fw-text);
   display: flex;
@@ -50,7 +51,7 @@
   font: inherit;
   color: inherit;
   background: var(--fw-bg);
-  border: 1px solid var(--fw-border);
+  border: var(--fw-border-width) solid var(--fw-border);
   border-radius: var(--fw-radius);
   padding: 0.55rem 0.7rem;
   min-height: 2.6rem;

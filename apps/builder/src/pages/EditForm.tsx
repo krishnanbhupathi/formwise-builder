@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { buttonLook } from "../components/button-look";
 import { Button, Centered, Shell } from "../components/Shell";
 import { DescribeButton } from "../components/DescribeDialog";
 import { UndoRedo } from "../components/UndoRedo";
@@ -17,7 +18,7 @@ export function EditForm({ id }: { id: string }) {
     return (
       <Shell>
         <Centered>
-          <h1 className="text-xl font-semibold">Can't open this form</h1>
+          <h1 className="text-2xl font-black tracking-tight text-accent-dark">Can't open this form</h1>
           <p className="text-muted">{error}</p>
           <p><a {...linkProps("/forms")} className="text-accent underline">See your forms</a></p>
         </Centered>
@@ -61,6 +62,7 @@ function Editor({ id, token, initial }: { id: string; token: string; initial: Ow
   if (!loaded) return null;
   return (
     <Shell
+      docLabel={<>Form <span className="normal-case">{id}</span> · {title || "Untitled form"}</>}
       actions={
         <>
           <SaveIndicator status={status} error={error} onRetry={() => void saver.save()} />
@@ -75,18 +77,25 @@ function Editor({ id, token, initial }: { id: string; token: string; initial: Ow
               await saver.save();
               navigate(`/edit/${id}/submissions`);
             }}
-            className="inline-flex h-9 items-center rounded-lg border border-line bg-panel px-3 text-sm font-medium hover:border-accent"
+            className={buttonLook.secondary}
           >
             Submissions
           </a>
           <Button onClick={() => shareRef.current?.showModal()}>Share</Button>
-          <Button variant="primary" onClick={onPublish} disabled={publishing || upToDate || status === "conflict"} title={upToDate ? "The live form matches this draft" : undefined}>
-            {publishing ? "Publishing…" : upToDate ? "Published" : server.publishedVersion ? "Publish changes" : "Publish"}
-          </Button>
+          {upToDate ? (
+            // The rubber stamp: nothing to publish until the draft changes.
+            <button type="button" disabled title="The live form matches this draft" className="fw-stamp ml-1 px-2.5 py-1.5 text-xs">
+              Published v{server.publishedVersion}
+            </button>
+          ) : (
+            <Button variant="primary" onClick={onPublish} disabled={publishing || status === "conflict"}>
+              {publishing ? "Publishing…" : server.publishedVersion ? "Publish changes" : "Publish"}
+            </Button>
+          )}
         </>
       }
     >
-      {publishError && <p role="alert" className="border-b border-line bg-accent-soft px-4 py-2 text-sm text-danger">{publishError}</p>}
+      {publishError && <p role="alert" className="border-b-2 border-danger bg-panel px-4 py-2 text-sm font-medium text-danger">{publishError}</p>}
       <Builder />
       <ShareDialog ref={shareRef} id={id} token={token} published={server.publishedVersion !== null} />
     </Shell>
@@ -108,9 +117,9 @@ function ShareDialog({ ref, id, token, published }: { ref: React.Ref<HTMLDialogE
   const publicUrl = `${location.origin}/f/${id}`;
   const editUrl = `${location.origin}/edit/${id}#${token}`;
   return (
-    <dialog ref={ref} aria-labelledby="share-title" className="m-auto w-[min(34rem,calc(100vw-2rem))] rounded-xl border border-line bg-panel p-0 text-ink backdrop:bg-black/40">
+    <dialog ref={ref} aria-labelledby="share-title" className="m-auto w-[min(34rem,calc(100vw-2rem))] border-2 border-ink bg-panel p-0 text-ink shadow-[6px_6px_0_var(--ink)] backdrop:bg-ink/45">
       <div className="flex flex-col gap-5 p-5">
-        <h2 id="share-title" className="text-lg font-semibold">Share</h2>
+        <h2 id="share-title" className="text-2xl font-black tracking-tight text-accent-dark">Share</h2>
         <LinkRow label="Public link" hint={published ? "Anyone with this link can fill in the form." : "Publish the form first; until then this link shows “not published”."} url={publicUrl} />
         <LinkRow label="Private edit link" hint="Anyone with this link can edit the form and read every submission. Keep it to yourself." url={editUrl} />
         <form method="dialog" className="flex justify-end">
@@ -134,9 +143,9 @@ function LinkRow({ label, hint, url }: { label: string; hint: string; url: strin
   };
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-sm font-medium">{label}</span>
+      <span className="label-mono text-muted">{label}</span>
       <div className="flex gap-2">
-        <input readOnly value={url} aria-label={label} onFocus={(e) => e.target.select()} className="min-w-0 flex-1 rounded-md border border-line bg-surface px-2 py-1.5 text-sm" />
+        <input readOnly value={url} aria-label={label} onFocus={(e) => e.target.select()} className="min-w-0 flex-1 border-[1.5px] border-ink bg-panel px-2.5 py-1.5 font-mono text-xs" />
         <Button onClick={copy} aria-label={`Copy ${label.toLowerCase()}`}>{copied ? "Copied" : "Copy"}</Button>
       </div>
       <span className="text-xs text-muted">{hint}</span>
