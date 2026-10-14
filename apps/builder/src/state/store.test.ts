@@ -33,7 +33,8 @@ describe("builder store", () => {
 
   describe("undo/redo", () => {
     const setup = () => {
-      const store = createBuilderStore(emptyForm("f"));
+      // A frozen clock: typing-merge must not depend on how fast the test runs.
+      const store = createBuilderStore(emptyForm("f"), { now: () => 0 });
       return { store, s: () => store.getState() };
     };
 
