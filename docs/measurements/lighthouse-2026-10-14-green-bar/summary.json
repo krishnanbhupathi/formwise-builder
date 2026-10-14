@@ -1,0 +1,50 @@
+[
+  {
+    "label": "builder",
+    "url": "https://formwise-builder.vercel.app/",
+    "form": "mobile",
+    "performance": 98,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "seo": 100,
+    "lcpMs": 1824.8335,
+    "tbtMs": 2.5,
+    "cls": 0.0001048490374534685
+  },
+  {
+    "label": "builder",
+    "url": "https://formwise-builder.vercel.app/",
+    "form": "desktop",
+    "performance": 100,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "seo": 100,
+    "lcpMs": 419.562,
+    "tbtMs": 0,
+    "cls": 0.00001788510930157896
+  },
+  {
+    "label": "public-form",
+    "url": "https://formwise-builder.vercel.app/f/jmdpq5gycd",
+    "form": "mobile",
+    "performance": 99,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "seo": 63,
+    "lcpMs": 1820.2730000000001,
+    "tbtMs": 0,
+    "cls": 0.02227155474357752
+  },
+  {
+    "label": "public-form",
+    "url": "https://formwise-builder.vercel.app/f/jmdpq5gycd",
+    "form": "desktop",
+    "performance": 100,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "seo": 63,
+    "lcpMs": 422.803,
+    "tbtMs": 0,
+    "cls": 0.005823191197501677
+  }
+]
