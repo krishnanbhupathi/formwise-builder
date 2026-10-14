@@ -6,9 +6,9 @@
     "performance": 100,
     "accessibility": 100,
     "bestPractices": 100,
-    "seo": 92,
-    "lcpMs": 1520.008,
-    "tbtMs": 6,
+    "seo": 100,
+    "lcpMs": 1524.132,
+    "tbtMs": 3.5,
     "cls": 0
   },
   {
@@ -18,8 +18,8 @@
     "performance": 100,
     "accessibility": 100,
     "bestPractices": 100,
-    "seo": 92,
-    "lcpMs": 379.358,
+    "seo": 100,
+    "lcpMs": 380.624,
     "tbtMs": 0,
     "cls": 0
   },
@@ -30,8 +30,8 @@
     "performance": 100,
     "accessibility": 100,
     "bestPractices": 100,
-    "seo": 91,
-    "lcpMs": 1525.5839999999998,
+    "seo": 63,
+    "lcpMs": 1523.5439999999999,
     "tbtMs": 0,
     "cls": 0.02195835994115493
   },
@@ -42,8 +42,8 @@
     "performance": 100,
     "accessibility": 100,
     "bestPractices": 100,
-    "seo": 91,
-    "lcpMs": 379.961,
+    "seo": 63,
+    "lcpMs": 383.065,
     "tbtMs": 0,
     "cls": 0.00602417768438257
   }
