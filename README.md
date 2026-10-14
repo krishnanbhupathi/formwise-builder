@@ -22,7 +22,7 @@ The renderer is a separate package (`@formwise/renderer`). It also powers the in
   - Publish freezes a numbered version, and the public link `/f/<id>` serves it.
   - Edits stay private until you publish again.
 - **Submissions:** the server validates each submission with the same code as the browser. The owner sees a table and can export CSV.
-- **Describe your form:** Claude Haiku 5.5 drafts the questions, types and conditions from a sentence or two. The draft replaces the canvas in one undoable step.
+- **Describe your form:** Claude Opus 5.5 drafts the questions, types and conditions from a sentence or two. The draft replaces the canvas in one undoable step.
 
 ## How it's built
 

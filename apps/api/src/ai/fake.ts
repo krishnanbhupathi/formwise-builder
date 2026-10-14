@@ -15,5 +15,5 @@ export const fakeModel: CallModel = async ({ description }) => {
       { key: "other", type: "text", label: "Which topic?", required: true, showIf: { key: "topic", equals: "Other" } },
     ],
   };
-  return { toolInput: draft, toolUseId: "toolu_fake", assistantContent: [], inputTokens: 0, outputTokens: 0 };
+  return { output: draft, text: JSON.stringify(draft), inputTokens: 0, outputTokens: 0 };
 };

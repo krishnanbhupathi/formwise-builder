@@ -1,8 +1,8 @@
 import { isInputField, parseFormSchema, type FormSchema } from "@formwise/renderer/core";
 import { draftFormSchema, draftToForm } from "./draft.js";
 
-/** One model turn: the tool input it produced plus what's needed to continue the conversation. */
-export type ModelTurn = { toolInput: unknown; toolUseId: string; assistantContent: unknown; inputTokens: number; outputTokens: number };
+/** One model turn: the parsed JSON it produced (undefined if it wasn't JSON) plus its raw text, to continue the conversation. */
+export type ModelTurn = { output: unknown; text: string; inputTokens: number; outputTokens: number };
 
 /** A conversation so far: the description, then (on retry) the previous attempt and its errors. */
 export type Exchange = { description: string; retry?: { previous: ModelTurn; errors: string[] } };
@@ -17,8 +17,8 @@ export type GenerateResult =
 export const MAX_ATTEMPTS = 2;
 
 /** Checks a draft end to end; returns the form or the list of problems to send back. */
-function check(toolInput: unknown, formId: string): { form: FormSchema } | { errors: string[] } {
-  const draft = draftFormSchema.safeParse(toolInput);
+function check(output: unknown, formId: string): { form: FormSchema } | { errors: string[] } {
+  const draft = draftFormSchema.safeParse(output);
   if (!draft.success) return { errors: draft.error.issues.map((i) => `${i.path.join(".") || "form"}: ${i.message}`) };
   const parsed = parseFormSchema(draftToForm(draft.data, formId));
   if (!parsed.ok) return { errors: parsed.errors };
@@ -36,7 +36,7 @@ export async function generateForm(description: string, callModel: CallModel, fo
     const turn = await callModel(exchange);
     inputTokens += turn.inputTokens;
     outputTokens += turn.outputTokens;
-    const result = check(turn.toolInput, formId);
+    const result = check(turn.output, formId);
     if ("form" in result) return { ok: true, form: result.form, attempts: attempt, inputTokens, outputTokens };
     lastErrors = result.errors;
     exchange = { description, retry: { previous: turn, errors: result.errors } };

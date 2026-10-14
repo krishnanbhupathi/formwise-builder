@@ -11,7 +11,7 @@ Spec: "Case Study Build Plan" (Claude Doc). Formwise is days 4–6 of the week (
 
 **Day 6**
 - **Describe your form** (`apps/api/src/ai/`):
-  - Claude Haiku 5.5 fills in a simple *draft* via a strictly-typed tool (keys, option text, conditions by key).
+  - Claude Opus 5.5 fills in a simple *draft* using structured outputs (JSON schema: keys, option text, conditions by key). Day 7 switch from Haiku 5.5: Opus rejects forced tool calls, and Haiku duplicated a question to fake an "is one of" condition.
   - `draftToForm` builds the real `FormSchema` with ids; `parseFormSchema` validates it, with one retry that sends back the exact errors.
   - The result replaces the canvas in one undoable step (Krishna).
   - Guards: descriptions of 10–1000 characters, 10 per IP per hour, 200 per day overall, 503 without a key, 60 s function limit.
@@ -64,6 +64,7 @@ Spec: "Case Study Build Plan" (Claude Doc). Formwise is days 4–6 of the week (
 | Day 6 | Don't publish to npm; Slotwise vendors the renderer | Krishna |
 | Day 6 | Model fills a draft format, server assigns ids | Fewer invalid outputs than asking for raw ids/cross-references; validated + one retry |
 | Day 6 | Claude Haiku 5.5 | Fast and cheap; quality checked on a real description |
+| Day 7 | Claude Opus 5.5 via structured outputs | Better forms (no duplicated questions); slower than Haiku (see docs/measurements/ai-opus-2026-10-15.md). Model is an env var, so switching back is a config change |
 | Day 6 | Cost guards: per-IP + global daily cap in Postgres | Public demo on Krishna's key |
 | Day 5 | API entry `api/index.ts` + `/api/(.*)` rewrite | Vercel's `[[...route]]` catch-all didn't match multi-segment paths outside Next.js |
 

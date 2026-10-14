@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { DraftForm } from "./draft.js";
 import { generateForm, MAX_ATTEMPTS, type CallModel, type ModelTurn } from "./generate.js";
 
-const turn = (toolInput: unknown): ModelTurn => ({ toolInput, toolUseId: "toolu_1", assistantContent: [], inputTokens: 100, outputTokens: 50 });
+const turn = (output: unknown): ModelTurn => ({ output, text: JSON.stringify(output) ?? "", inputTokens: 100, outputTokens: 50 });
 const good: DraftForm = {
   title: "Contact",
   fields: [
@@ -31,6 +31,13 @@ describe("generateForm", () => {
     const model = vi.fn<CallModel>().mockResolvedValueOnce(turn({ title: "T", fields: [{ key: "Bad Key!", type: "text", label: "A", required: true }] })).mockResolvedValueOnce(turn(good));
     await generateForm("x", model, "f");
     expect(model.mock.calls[1]![0].retry!.errors[0]).toMatch(/^fields\.0\.key:/);
+  });
+
+  it("treats a non-JSON answer as invalid and retries", async () => {
+    const model = vi.fn<CallModel>().mockResolvedValueOnce({ output: undefined, text: "oops", inputTokens: 1, outputTokens: 1 }).mockResolvedValueOnce(turn(good));
+    const result = await generateForm("x", model, "f");
+    expect(result).toMatchObject({ ok: true, attempts: 2 });
+    expect(model.mock.calls[1]![0].retry!.previous.text).toBe("oops");
   });
 
   it("rejects a form with only headings", async () => {
