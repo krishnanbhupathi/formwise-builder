@@ -1,5 +1,5 @@
-// Vercel entry: every /api/* request goes to the Hono app (Node runtime,
-// since postgres.js needs TCP sockets).
+// Vercel entry. vercel.json rewrites every /api/* path here; Hono routes on
+// the original URL. Node runtime, since postgres.js needs TCP sockets.
 import { handle } from "hono/vercel";
 import { createApp } from "../apps/api/src/app.js";
 import { getDb } from "../apps/api/src/db/index.js";

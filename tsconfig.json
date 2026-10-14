@@ -1,0 +1,15 @@
+{
+  // Used by Vercel when it compiles api/index.ts; each workspace has its own tsconfig.
+  "compilerOptions": {
+    "target": "es2023",
+    "lib": ["ES2023"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": ["node"],
+    "paths": { "@formwise/renderer/core": ["./packages/renderer/src/core.ts"] }
+  },
+  "include": ["api"]
+}
