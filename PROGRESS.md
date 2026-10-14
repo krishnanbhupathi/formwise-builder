@@ -51,7 +51,7 @@ Spec: "Case Study Build Plan" (Claude Doc). Formwise is days 4–6 of the week (
 - **Tests:** **120 Vitest** (37 renderer, 65 builder, 18 API on PGlite) + **13 Playwright** (+1 skipped: mouse drag on mobile), desktop + Pixel 7, against the production build, the real API and Postgres. All passing locally and in CI.
 
 ### Next (Day 6)
-1. AI "describe your form" → schema. The model's output goes through `parseFormSchema` and then `replaceForm`, so it can be undone. Needs an AI API key from Krishna. It's 4th in the cut order.
+1. AI "describe your form" → schema with Claude Haiku 5.5 (`ANTHROPIC_API_KEY` is set in Vercel production and local `.env.local`; verified 15 Oct). The model's output goes through `parseFormSchema` and then `replaceForm`, so it can be undone. Tests use a fake model. Rate-limit per IP. It's 4th in the cut order.
 2. The renderer as Slotwise's intake form: publish `@formwise/renderer` (needs the npm scope) or vendor it. Validate on Slotwise's server with `/core`.
 3. Tests for both.
 4. Deploy both apps once the accounts exist.
@@ -86,7 +86,7 @@ Spec: "Case Study Build Plan" (Claude Doc). Formwise is days 4–6 of the week (
 
 ### Blocked on Krishna
 - **npm:** an account and scope for publishing the renderer (Day 6).
-- **AI API key** for "describe your form" (Day 6).
+
 
 ### Known issues
 - Preview deployments have no database (migrations are skipped there, so their API returns errors). Next step: Neon's Vercel integration for a database branch per preview.
