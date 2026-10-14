@@ -1,0 +1,8 @@
+{"n": 1, "status": 200, "clientMs": 7674, "questions": 4, "conditions": 0, "error": null}
+{"n": 2, "status": 200, "clientMs": 4278, "questions": 6, "conditions": 3, "error": null}
+{"n": 3, "status": 200, "clientMs": 4619, "questions": 8, "conditions": 1, "error": null}
+{"n": 4, "status": 200, "clientMs": 3698, "questions": 4, "conditions": 0, "error": null}
+{"n": 5, "status": 200, "clientMs": 2963, "questions": 3, "conditions": 0, "error": null}
+{"n": 6, "status": 200, "clientMs": 4814, "questions": 7, "conditions": 1, "error": null}
+{"n": 7, "status": 200, "clientMs": 6540, "questions": 12, "conditions": 0, "error": null}
+{"n": 8, "status": 200, "clientMs": 2913, "questions": 5, "conditions": 0, "error": null}
