@@ -78,7 +78,6 @@ Spec: "Case Study Build Plan" (Claude Doc). Formwise is days 4–6 of the week (
 ### Known issues
 - Conditions only support "equals one value", so "show if Year 11 or above" can't be expressed (the AI picks a single value). Next step: an "is one of" rule.
 - Preview deployments have no database (migrations are skipped there, so their API returns errors). Next step: Neon's Vercel integration for a database branch per preview.
-- The six e2e test forms were deleted from production on 15 Oct. A few forms left over from recording the video are still there until Krishna decides about them.
 - `rate_limits` rows are never pruned (tiny; add a cleanup when a cron exists).
 - An edit link can't be revoked or rotated yet.
 - On phones the inspector sits below the canvas, so after tapping a question you scroll down to edit it.
