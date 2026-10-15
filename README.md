@@ -6,6 +6,21 @@ The renderer is a separate package (`@formwise/renderer`). It also powers the in
 
 **Live:** https://formwise-builder.vercel.app. It also powers the intake questions on [Slotwise](https://slotwise-booking-xi.vercel.app/book/demo-tutor/a-level-physics). Status and decisions: [PROGRESS.md](PROGRESS.md).
 
+![The Formwise builder: field types on the left, the form on green-bar paper in the middle with a condition tag on "Exam board", and the properties panel on the right](docs/screenshots/builder.png)
+
+## Measured
+Figures from production, with the raw data in [`docs/measurements`](docs/measurements).
+
+| | Result |
+|---|---|
+| Lighthouse, builder (mobile / desktop) | Performance 98 / 100, Accessibility 100 / 100, Best practices 100, SEO 100. Mobile LCP 1.8 s |
+| Lighthouse, public form (mobile / desktop) | Performance 99 / 100, Accessibility 100 / 100, Best practices 100. SEO 63 on purpose: `robots.txt` keeps shared forms out of search |
+| "Describe your form", Claude Opus 5.5 | 8 of 8 descriptions gave a valid form. End to end from India to the US region: median 4.45 s, range 2.91–7.67 s |
+| Same 8 descriptions, Claude Haiku 5.5 (before the switch) | 8 of 8 valid. End to end median 2.22 s; server-side median 1.94 s over 9 calls; about 1,700 input and 220–484 output tokens per call |
+| Tests | 140 Vitest + 16 Playwright runs (15 pass, 1 skipped by design), green in CI |
+
+Lighthouse is the median of 3 runs with Lighthouse 12.8.2's default throttling ([summary](docs/measurements/lighthouse-2026-10-14-green-bar/SUMMARY.md)). AI timings are in [`ai-opus-2026-10-15.md`](docs/measurements/ai-opus-2026-10-15.md) and [`ai-2026-10-15.md`](docs/measurements/ai-2026-10-15.md).
+
 ## What works today
 - **Palette → canvas:** drag a field type onto the canvas, or click it to insert it after the selected question.
 - **Reorder:** drag by the handle, or use the keyboard (Tab to the handle, Space, arrow keys, Space). Screen readers hear question names, not ids.
@@ -23,6 +38,13 @@ The renderer is a separate package (`@formwise/renderer`). It also powers the in
   - Edits stay private until you publish again.
 - **Submissions:** the server validates each submission with the same code as the browser. The owner sees a table and can export CSV.
 - **Describe your form:** Claude Opus 5.5 drafts the questions, types and conditions from a sentence or two. The draft replaces the canvas in one undoable step.
+
+## Design
+The look is **green-bar form paper**, the striped continuous paper offices printed forms and ledgers on. The builder looks like the thing it makes.
+- **Printed boxes:** each question is a square box with a numbered corner label and a type code (`01 TXT · SHORT ANSWER`). The public form uses the same numbering.
+- **Colour has one job each:** green means you can act; a canary "carbon" tag marks a question that depends on another answer; red is only for required marks, errors and the "Published v3" rubber stamp.
+- **Type:** Schibsted Grotesk for headings and UI, IBM Plex Mono for field numbers and codes. Both are self-hosted, so pages make no third-party requests.
+- Light only, because it's paper.
 
 ## How it's built
 
@@ -69,7 +91,7 @@ Every exported form carries `version`, and a migration registry upgrades old for
 - The CSV is built in the browser, so the token never goes in a URL. Cells starting with `= + - @` are escaped against spreadsheet formula injection.
 
 **AI output is checked like any other untrusted input:**
-- The model fills in a small *draft* format through a strictly-typed tool: readable keys, option text, conditions by key.
+- The model fills in a small *draft* format using structured outputs (a JSON schema): readable keys, option text, conditions by key. Length and range limits that structured outputs can't express are still enforced afterwards by the full Zod schema.
 - The server turns the draft into a real schema with ids and runs `parseFormSchema`. If that fails, the exact errors go back to the model once.
 - Abuse limits: descriptions of 10–1000 characters, a per-IP rate limit, and a daily cap.
 - Each call logs its duration and token counts.
@@ -92,6 +114,7 @@ Every exported form carries `version`, and a migration registry upgrades old for
 | Hono inside the same Vercel project | One domain, no CORS, one deploy | API and SPA deploy together |
 | Rate limit in Postgres | No extra service (Redis/KV) | One upsert per public request; not an edge-level defence |
 | Hand-written 4-route router | No dependency for pathname + pushState | Would swap for a router library as routes grow |
+| Claude Opus 5.5 for "Describe your form" (`FORMWISE_AI_MODEL` overrides it) | Haiku duplicated a question to fake an "is one of" condition; Opus didn't | About twice as slow end to end (median 4.45 s vs 2.22 s) |
 
 ## Run it
 
@@ -106,7 +129,7 @@ npm run typecheck && npm run lint
 ```
 
 ## Tests
-- **137 Vitest tests** in total (39 renderer, 65 builder, 33 API).
+- **140 Vitest tests** in total (39 renderer, 65 builder, 36 API).
 - **Renderer and builder** cover:
   - schema rules and versioning;
   - validation, including conditional and hidden fields, files and numbers;
@@ -115,15 +138,15 @@ npm run typecheck && npm run lint
   - undo/redo history and its shortcuts;
   - the autosave controller;
   - CSV and the router.
-- **The 33 API tests** run against PGlite (Postgres compiled to WASM) and cover:
+- **The 36 API tests** run against PGlite (Postgres compiled to WASM) and cover:
   - edit-token auth;
   - optimistic locking;
   - publishing;
   - server-side validation against old versions;
   - the honeypot and rate limits;
   - pagination;
-  - AI draft conversion, retry and endpoint limits.
-- **15 Playwright tests (+1 skipped)** on desktop Chrome and Pixel 7, against the production build, the real API and Postgres. They cover:
+  - AI draft conversion, retry (including non-JSON answers), the structured-output schema and endpoint limits.
+- **16 Playwright runs (15 pass, 1 skipped)** on desktop Chrome and Pixel 7, against the production build, the real API and Postgres. They cover:
   - building with mouse and keyboard;
   - conditions and undo;
   - describe-your-form (fake model);
@@ -132,3 +155,9 @@ npm run typecheck && npm run lint
   - a stale second tab.
 
   The mouse-drag test is skipped on mobile. The suite also runs against production: `E2E_BASE_URL=https://formwise-builder.vercel.app npm run e2e`.
+
+## Known limitations
+- Conditions only support "equals one value". "Is one of" is the natural next step; without it, a question shown for several answers can't be expressed.
+- File fields record name, size and type only. There's no file storage.
+- AI drafts vary between runs. In one measured run the model returned 4 questions for a description that asked for 6; a rerun returned all 6. The draft is always validated, and undo restores the previous form.
+- No accounts: losing the edit link means losing access to the form.

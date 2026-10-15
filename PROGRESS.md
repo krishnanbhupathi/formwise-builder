@@ -30,9 +30,10 @@ Spec: "Case Study Build Plan" (Claude Doc). Formwise is days 4–6 of the week (
   - 137 Vitest: 39 renderer, 65 builder, 33 API (incl. 10 AI draft/generator tests and 5 endpoint tests);
   - 15 Playwright (+1 skipped), all passing locally and in CI.
 
-### Next (Day 7)
-1. Measure: Lighthouse on the builder and public form, AI latency from the logs, test counts.
-2. 2-minute video, README polish, case-study page on bhupathi.dev.
+### Day 7 (15 Oct)
+- **Done:** measured Lighthouse (builder and public form, before and after the restyle) and AI latency (Haiku, then Opus on the same 8 descriptions); switched "Describe your form" to Opus 5.5 with structured outputs; new green-bar identity; README with screenshot, measurements and known limitations.
+- **Tests:** 140 Vitest (39 renderer, 65 builder, 36 API) + 16 Playwright runs (15 pass, 1 skipped), green in CI.
+- **Next:** the ~90 s video (Playwright recording, Deepgram Aura-2 "Thalia" voiceover, captions), case-study page on bhupathi.dev.
 
 ### Decisions
 | Date | Decision | Why |
