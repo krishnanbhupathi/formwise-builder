@@ -68,6 +68,7 @@ Spec: "Case Study Build Plan" (Claude Doc). Formwise is days 4–6 of the week (
 | Day 7 | Visual identity: green-bar form paper (Schibsted Grotesk + IBM Plex Mono, square boxes, canary condition tags, publish stamp), light only | The old UI read as a generic template; fonts self-hosted so there are no third-party requests (Krishna approved the direction) |
 | Day 7 | Claude Opus 5.5 via structured outputs | Better forms (no duplicated questions); slower than Haiku (see docs/measurements/ai-opus-2026-10-15.md). Model is an env var, so switching back is a config change |
 | Day 6 | Cost guards: per-IP + global daily cap in Postgres | Public demo on Krishna's key |
+| Day 7 | Phone editor header: two rows (logo, Share, Publish; then save status, history, Describe, Submissions), short save text with the full text kept for screen readers | Was three rows; Publish stays in view |
 | Day 5 | API entry `api/index.ts` + `/api/(.*)` rewrite | Vercel's `[[...route]]` catch-all didn't match multi-segment paths outside Next.js |
 
 ### Blocked on Krishna
@@ -77,8 +78,7 @@ Spec: "Case Study Build Plan" (Claude Doc). Formwise is days 4–6 of the week (
 ### Known issues
 - Conditions only support "equals one value", so "show if Year 11 or above" can't be expressed (the AI picks a single value). Next step: an "is one of" rule.
 - Preview deployments have no database (migrations are skipped there, so their API returns errors). Next step: Neon's Vercel integration for a database branch per preview.
-- Production contains a few test forms created by the e2e run against it (only reachable with their edit tokens).
-- On phones the editor header wraps to three rows.
+- The six e2e test forms were deleted from production on 15 Oct. A few forms left over from recording the video are still there until Krishna decides about them.
 - `rate_limits` rows are never pruned (tiny; add a cleanup when a cron exists).
 - An edit link can't be revoked or rotated yet.
 - On phones the inspector sits below the canvas, so after tapping a question you scroll down to edit it.

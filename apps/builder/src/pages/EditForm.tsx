@@ -81,6 +81,10 @@ function Editor({ id, token, initial }: { id: string; token: string; initial: Ow
           >
             Submissions
           </a>
+        </>
+      }
+      primary={
+        <>
           <Button onClick={() => shareRef.current?.showModal()}>Share</Button>
           {upToDate ? (
             // The rubber stamp: nothing to publish until the draft changes.
@@ -104,9 +108,12 @@ function Editor({ id, token, initial }: { id: string; token: string; initial: Ow
 
 function SaveIndicator({ status, error, onRetry }: { status: SaveStatus; error: string | null; onRetry: () => void }) {
   const text = { saved: "All changes saved", pending: "Unsaved changes", saving: "Saving…", error: "Couldn't save", conflict: "Edited elsewhere" }[status];
+  // Phones get the short form so the editor's actions fit on one row.
+  const short = { saved: "Saved", pending: "Unsaved", saving: "Saving…", error: "Not saved", conflict: "Conflict" }[status];
   return (
     <span role="status" className={`flex items-center gap-2 text-sm ${status === "error" || status === "conflict" ? "text-danger" : "text-muted"}`} title={error ?? undefined}>
-      {text}
+      <span className="max-sm:sr-only">{text}</span>
+      <span aria-hidden="true" className="sm:hidden">{short}</span>
       {status === "error" && <button type="button" onClick={onRetry} className="font-medium text-accent underline">Retry</button>}
       {status === "conflict" && <button type="button" onClick={() => location.reload()} className="font-medium text-accent underline">Reload</button>}
     </span>
