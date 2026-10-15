@@ -6,6 +6,8 @@ The renderer is a separate package (`@formwise/renderer`). It also powers the in
 
 **Live:** https://formwise-builder.vercel.app. It also powers the intake questions on [Slotwise](https://slotwise-booking-xi.vercel.app/book/demo-tutor/a-level-physics). Status and decisions: [PROGRESS.md](PROGRESS.md).
 
+**Walkthrough video (93 s, narrated):** https://videos.bhupathi.dev/case-studies/formwise.mp4
+
 ![The Formwise builder: field types on the left, the form on green-bar paper in the middle with a condition tag on "Exam board", and the properties panel on the right](docs/screenshots/builder.png)
 
 ## Measured
