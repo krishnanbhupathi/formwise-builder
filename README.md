@@ -48,6 +48,36 @@ The look is **green-bar form paper**, the striped continuous paper offices print
 
 ## How it's built
 
+```mermaid
+flowchart LR
+  owner(["Form owner"])
+  respondent(["Respondent"])
+  subgraph vercel["Vercel · one project, one domain"]
+    spa["Builder SPA<br/>Vite + React, Zustand, dnd-kit"]
+    publicform["Public form /f/:id"]
+    api["Hono API at /api<br/>Vercel Function"]
+  end
+  renderer["@formwise/renderer<br/>FormSchema, parseFormSchema,<br/>validateSubmission, FormRenderer"]
+  db[("Postgres · Neon<br/>forms, form_versions,<br/>submissions, rate_limits")]
+  claude["Claude Opus 5.5<br/>structured outputs"]
+  slotwise["Slotwise<br/>vendored renderer"]
+
+  owner -- "edit link #token" --> spa
+  respondent --> publicform
+  spa -- "Bearer token: save, publish, submissions" --> api
+  spa -- "Describe it" --> api
+  publicform -- "submit answers" --> api
+  api -- "draft JSON" --> claude
+  api --> db
+  spa -.-> renderer
+  publicform -.-> renderer
+  api -.-> renderer
+  slotwise -. "fetches a published form" .-> api
+  slotwise -.-> renderer
+```
+
+The renderer package is the shared core: the builder's preview, the public form, the API and Slotwise all validate with the same `parseFormSchema` and `validateSubmission`, so a form can't pass in one place and fail in another. Dashed arrows are code imports; solid arrows are requests.
+
 ```
 packages/renderer   @formwise/renderer: schema (Zod), validation, <FormRenderer>, styles.css
                     (@formwise/renderer/core = schema + validation without React)
