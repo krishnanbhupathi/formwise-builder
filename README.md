@@ -193,3 +193,7 @@ npm run typecheck && npm run lint
 - File fields record name, size and type only. There's no file storage.
 - AI drafts vary between runs. In one measured run the model returned 4 questions for a description that asked for 6; a rerun returned all 6. The draft is always validated, and undo restores the previous form.
 - No accounts: losing the edit link means losing access to the form.
+
+## License
+
+[MIT](./LICENSE)
